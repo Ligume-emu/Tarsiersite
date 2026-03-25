@@ -1,94 +1,256 @@
-import { useRef } from 'react';
+import { useRef, useEffect, Suspense } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useGLTF } from '@react-three/drei';
+import * as THREE from 'three';
+import clientVideo from '../assets/client-showcase.mov';
+import iphoneModel from '../assets/iphone_17_pro_max.glb?url';
+
+function Starfield() {
+  const stars = Array.from({ length: 140 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 1.8 + 0.4,
+    opacity: Math.random() * 0.5 + 0.1,
+  }));
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {stars.map((star) => (
+        <div
+          key={star.id}
+          className="absolute rounded-full bg-white"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            opacity: star.opacity,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: number; lastY: number };
+
+function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
+  const { scene } = useGLTF(iphoneModel);
+  const groupRef = useRef<THREE.Group>(null);
+  const currentRotY = useRef(-Math.PI / 2);
+  const currentRotX = useRef(0);
+
+  useEffect(() => {
+    const video = document.createElement('video');
+    video.src = clientVideo;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.setAttribute('playsinline', '');
+
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.flipY = false;
+    videoTexture.colorSpace = THREE.SRGBColorSpace;
+
+    let applied = false;
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const n = child.name.toLowerCase();
+        if (child.name === 'Cube.010_screen.001_0' || n.includes('screen')) {
+          child.material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide });
+          (child.material as THREE.MeshBasicMaterial).needsUpdate = true;
+          applied = true;
+        }
+      }
+    });
+
+    if (!applied) {
+      // fallback: apply to every mesh so we can see it render
+      scene.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.material = new THREE.MeshBasicMaterial({ map: videoTexture });
+          (child.material as THREE.MeshBasicMaterial).needsUpdate = true;
+        }
+      });
+    }
+
+    video.play().catch(() => {});
+
+    return () => {
+      video.pause();
+      videoTexture.dispose();
+    };
+  }, [scene]);
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    const drag = dragRef.current;
+    currentRotY.current += (drag.rotY - currentRotY.current) * 0.1;
+    currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
+    groupRef.current.rotation.y = currentRotY.current + Math.sin(state.clock.elapsedTime * 0.4) * 0.04;
+    groupRef.current.rotation.x = currentRotX.current;
+    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.03;
+  });
+
+  return (
+    <primitive
+      ref={groupRef}
+      object={scene}
+      scale={1.8}
+      position={[0, 0, 0]}
+    />
+  );
+}
+
+function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
+  return (
+    <>
+      <ambientLight intensity={0.35} />
+      <directionalLight position={[3, 5, 4]} intensity={1.4} castShadow />
+      <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
+      <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
+      <Suspense fallback={null}>
+        <IPhoneWithVideo dragRef={dragRef} />
+      </Suspense>
+    </>
+  );
+}
 
 export default function WebShowcase() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-10%' });
+  const sectionRef = useRef(null);
+  const inView = useInView(sectionRef, { once: true, margin: '-10%' });
+  const dragRef = useRef<DragState>({ rotX: 0, rotY: -Math.PI / 2, isDragging: false, lastX: 0, lastY: 0 });
+
+  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    dragRef.current.isDragging = true;
+    dragRef.current.lastX = e.clientX;
+    dragRef.current.lastY = e.clientY;
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+  }
+
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragRef.current.isDragging) return;
+    const dx = e.clientX - dragRef.current.lastX;
+    const dy = e.clientY - dragRef.current.lastY;
+    dragRef.current.rotY += dx * 0.008;
+    dragRef.current.rotX += dy * 0.008;
+    dragRef.current.rotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, dragRef.current.rotX));
+    dragRef.current.lastX = e.clientX;
+    dragRef.current.lastY = e.clientY;
+  }
+
+  function handlePointerUp() {
+    dragRef.current.isDragging = false;
+  }
 
   return (
     <section
-      ref={ref}
-      className="bg-[#141210] py-24 px-6 md:px-16 overflow-hidden"
+      ref={sectionRef}
+      className="bg-[#0A0806] py-24 px-6 md:px-16 overflow-hidden"
     >
-      <motion.div
-        initial={{ opacity: 0, y: 32 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="max-w-6xl mx-auto"
-      >
-        {/* Section label */}
-        <p className="font-mono text-xs tracking-[0.2em] uppercase text-[#B85C2A] mb-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Label */}
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="font-mono text-xs tracking-[0.2em] uppercase text-[#B85C2A] mb-6"
+        >
           What We Build
-        </p>
+        </motion.p>
 
         {/* Heading */}
-        <h2
-          className="font-display text-4xl md:text-6xl text-[#F7F4F1] mb-16 leading-[1.1]"
-          style={{ fontFamily: 'Cormorant Garamond, serif' }}
+        <motion.h2
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-16 leading-[1.05]"
+          style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: 'clamp(2rem, 5vw, 4rem)',
+            color: '#F7F4F1',
+          }}
         >
           Websites that carry<br />the weight of a brand.
-        </h2>
+        </motion.h2>
 
-        {/* Browser mockup */}
+        {/* 3D Stage */}
         <motion.div
           initial={{ opacity: 0, y: 48 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-xl overflow-hidden border border-white/10 shadow-2xl"
+          transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="relative rounded-2xl overflow-hidden border border-white/10"
+          style={{ height: '640px', background: '#060504', cursor: 'grab' }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
         >
+          <Starfield />
+
           {/* Browser chrome */}
-          <div className="bg-[#1E1B18] px-4 py-3 flex items-center gap-2 border-b border-white/10">
+          <div className="absolute top-0 left-0 right-0 bg-[#111]/80 backdrop-blur-sm px-4 py-2.5 flex items-center gap-2 border-b border-white/10 z-10">
             <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-white/20" />
-              <div className="w-3 h-3 rounded-full bg-white/20" />
-              <div className="w-3 h-3 rounded-full bg-white/20" />
+              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
+              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
             </div>
-            <div className="flex-1 mx-4">
-              <div className="bg-white/10 rounded-md px-3 py-1 text-xs text-white/40 font-mono max-w-xs">
+            <div className="flex-1 mx-3">
+              <div className="bg-white/10 rounded px-3 py-0.5 text-xs text-white/40 font-mono max-w-[200px]">
                 client-site.com
               </div>
             </div>
           </div>
 
-          {/* Site preview area */}
-          <div className="bg-[#0E0C0A] aspect-[16/9] flex flex-col items-center justify-center relative overflow-hidden">
-            {/* Skeleton lines */}
-            <div className="absolute inset-0 flex flex-col gap-4 p-12 opacity-20">
-              <div className="h-8 w-1/3 bg-white/30 rounded" />
-              <div className="h-4 w-2/3 bg-white/20 rounded" />
-              <div className="h-4 w-1/2 bg-white/20 rounded" />
-              <div className="mt-6 h-10 w-36 bg-[#B85C2A]/60 rounded" />
-            </div>
-            {/* Center label */}
-            <div className="relative z-10 text-center">
-              <p className="text-white/30 font-mono text-xs tracking-widest uppercase mb-2">Client Work</p>
-              <p className="text-white/60 text-sm">Preview coming soon</p>
-            </div>
+          {/* R3F Canvas */}
+          <div className="absolute inset-0" style={{ paddingTop: '36px' }}>
+            <Canvas
+              style={{ width: '100%', height: '100%' }}
+              camera={{ position: [0, 0, 5], fov: 45 }}
+              gl={{ antialias: true, alpha: true }}
+            >
+              <SceneContent dragRef={dragRef} />
+            </Canvas>
           </div>
+
+          {/* Ambient glow */}
+          <div
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none"
+            style={{
+              width: '400px',
+              height: '150px',
+              background: 'radial-gradient(ellipse, rgba(184,92,42,0.12) 0%, transparent 70%)',
+              filter: 'blur(24px)',
+            }}
+          />
         </motion.div>
 
-        {/* Site meta */}
+        {/* Meta row */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="mt-8 flex flex-wrap items-center justify-between gap-4"
+          transition={{ duration: 0.7, delay: 0.6 }}
+          className="mt-6 flex flex-wrap items-center justify-between gap-4"
         >
           <div>
             <p className="text-white/40 text-xs font-mono mb-1">Client Work — 2025</p>
-            <p className="text-[#F7F4F1] text-lg" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
-              Bespoke digital presence for a Philippine premium brand.
+            <p style={{ fontFamily: 'Cormorant Garamond, serif', color: '#F7F4F1', fontSize: '1.1rem' }}>
+              Premium real estate platform for a Philippine property brand.
             </p>
           </div>
-          <div className="flex gap-2">
-            {['Brand Identity', 'Web Design', 'Framer'].map((tag) => (
+          <div className="flex gap-2 flex-wrap">
+            {['Web Design', 'Development', 'Framer'].map((tag) => (
               <span key={tag} className="text-xs font-mono px-3 py-1 border border-white/20 text-white/50 rounded-full">
                 {tag}
               </span>
             ))}
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }

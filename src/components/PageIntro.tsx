@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import tarsierLogo from '@/assets/tarsier-logo.png';
 
 const PageIntro = ({ onComplete }: { onComplete: () => void }) => {
   const [visible, setVisible] = useState(true);
@@ -32,29 +33,11 @@ const PageIntro = ({ onComplete }: { onComplete: () => void }) => {
                 transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                 className="flex flex-col items-center gap-6"
               >
-                <svg viewBox="0 0 280 130" className="w-[200px] lg:w-[280px]">
-                  <text
-                    x="4" y="110"
-                    fontFamily="Cormorant Garamond, serif"
-                    fontSize="130"
-                    fill="hsl(22 68% 45%)"
-                  >{'{'}</text>
-                  <circle cx="82" cy="65" r="32" fill="hsl(22 68% 45%)" />
-                  <circle cx="198" cy="65" r="32" fill="hsl(22 68% 45%)" />
-                  <text
-                    x="140" y="112"
-                    fontFamily="DM Mono, monospace"
-                    fontSize="20"
-                    fill="hsl(22 68% 45%)"
-                    textAnchor="middle"
-                  >*</text>
-                  <text
-                    x="222" y="110"
-                    fontFamily="Cormorant Garamond, serif"
-                    fontSize="130"
-                    fill="hsl(22 68% 45%)"
-                  >{'}'}</text>
-                </svg>
+                <img
+                  src={tarsierLogo}
+                  alt="Tarsier Global Technologies"
+                  style={{ width: '80px', height: 'auto' }}
+                />
 
                 <motion.span
                   initial={{ opacity: 0, y: 8 }}

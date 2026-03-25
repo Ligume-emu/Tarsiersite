@@ -1,8 +1,6 @@
-import { Suspense } from "react";
-// @ts-ignore
-import Spline from "@splinetool/react-spline";
 import { motion } from "framer-motion";
 import tarsierLogo from "@/assets/tarsier-logo.png";
+import TarsierHero3D from "@/components/TarsierHero3D";
 
 const HeroSection = () => {
   return (
@@ -62,27 +60,14 @@ const HeroSection = () => {
             </motion.div>
           </div>
 
-          {/* Right — Spline 3D Scene */}
+          {/* Right — Three.js 3D Scene */}
           <motion.div
-            className="flex items-center justify-center w-full h-[600px] md:h-[700px]"
+            className="flex items-center justify-center w-full h-[420px] lg:h-[560px]"
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <Suspense fallback={
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="font-mono text-[11px] text-tarsier animate-pulse tracking-widest uppercase">
-                  Loading...
-                </div>
-              </div>
-            }>
-              <div className="w-full h-[600px] md:h-[700px]">
-                <Spline
-                  scene="https://prod.spline.design/arZuDQHq9mAZoKo6/scene.splinecode"
-                  style={{ width: '100%', height: '100%' }}
-                />
-              </div>
-            </Suspense>
+            <TarsierHero3D />
           </motion.div>
 
         </div>

@@ -86,3 +86,14 @@ section + section {
 [id] {
   scroll-margin-top: 80px;
 }
+
+/* Hide Spline watermark */
+canvas + div[style*="position"],
+spline-viewer::part(logo),
+#logo {
+  display: none !important;
+}
+
+.spline-watermark {
+  display: none !important;
+}
