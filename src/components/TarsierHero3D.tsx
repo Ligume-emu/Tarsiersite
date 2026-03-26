@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import tarsierLogoSrc from '@/assets/tarsier-logo.png';
 
 const TARSIER_ORANGE = 0xb85c2a;
 const PARTICLE_COUNT = 220;
@@ -24,145 +25,25 @@ const TarsierHero3D = () => {
     // --- Scene & Camera ---
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
-    camera.position.set(0, 0, 7);
+    camera.position.set(0, 0, 5);
 
     // --- Lighting ---
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambient);
-    const point = new THREE.PointLight(TARSIER_ORANGE, 3, 20);
-    point.position.set(2, 3, 4);
-    scene.add(point);
-    const point2 = new THREE.PointLight(0xffd4a8, 1.5, 15);
-    point2.position.set(-3, -2, 3);
-    scene.add(point2);
 
-    // --- Material ---
-    const mat = new THREE.MeshStandardMaterial({
-      color: TARSIER_ORANGE,
-      metalness: 0.4,
-      roughness: 0.3,
+    // --- Logo plane ---
+    const loader = new THREE.TextureLoader();
+    const logoTexture = loader.load(tarsierLogoSrc);
+
+    const planeGeo = new THREE.PlaneGeometry(3.2, 3.2);
+    const planeMat = new THREE.MeshBasicMaterial({
+      map: logoTexture,
+      transparent: true,
+      side: THREE.DoubleSide,
+      alphaTest: 0.05,
     });
-
-    const group = new THREE.Group();
-    scene.add(group);
-
-    // Helper: rounded box (brace segment)
-    const box = (w: number, h: number, d: number) =>
-      new THREE.BoxGeometry(w, h, d, 1, 1, 1);
-
-    // --- Build {  } braces ---
-    const braceThick = 0.13;
-    const braceD = 0.28;
-
-    // Single brace shape: top bar + bottom bar + left vertical
-    const makeBrace = (flip: boolean) => {
-      const g = new THREE.Group();
-      const sign = flip ? 1 : -1;
-
-      // Top horizontal
-      const topMesh = new THREE.Mesh(box(0.55, braceThick, braceD), mat);
-      topMesh.position.set(sign * 0.2, 0.82, 0);
-      g.add(topMesh);
-
-      // Bottom horizontal
-      const botMesh = new THREE.Mesh(box(0.55, braceThick, braceD), mat);
-      botMesh.position.set(sign * 0.2, -0.82, 0);
-      g.add(botMesh);
-
-      // Vertical spine
-      const spineMesh = new THREE.Mesh(box(braceThick, 1.52, braceD), mat);
-      spineMesh.position.set(sign * 0.44, 0, 0);
-      g.add(spineMesh);
-
-      // Mid knuckle (the centre bump of a curly brace)
-      const knuckleMesh = new THREE.Mesh(box(0.3, braceThick, braceD), mat);
-      knuckleMesh.position.set(sign * 0.05, 0, 0);
-      g.add(knuckleMesh);
-
-      return g;
-    };
-
-    const leftBrace = makeBrace(false);
-    leftBrace.position.x = -1.72;
-    group.add(leftBrace);
-
-    const rightBrace = makeBrace(true);
-    rightBrace.position.x = 1.72;
-    group.add(rightBrace);
-
-    // --- Eyes (two spheres) ---
-    const eyeGeo = new THREE.SphereGeometry(0.38, 32, 32);
-    const eyeMat = new THREE.MeshStandardMaterial({
-      color: TARSIER_ORANGE,
-      metalness: 0.5,
-      roughness: 0.2,
-      emissive: new THREE.Color(TARSIER_ORANGE),
-      emissiveIntensity: 0.15,
-    });
-
-    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-    leftEye.position.set(-0.62, 0.18, 0);
-    group.add(leftEye);
-
-    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-    rightEye.position.set(0.62, 0.18, 0);
-    group.add(rightEye);
-
-    // --- Asterisk nose (6 thin boxes rotated) ---
-    const asteriskGroup = new THREE.Group();
-    asteriskGroup.position.set(0, -0.55, 0);
-    const asteriskMat = new THREE.MeshStandardMaterial({
-      color: TARSIER_ORANGE,
-      metalness: 0.3,
-      roughness: 0.4,
-    });
-    for (let i = 0; i < 3; i++) {
-      const arm = new THREE.Mesh(box(0.36, 0.07, 0.07), asteriskMat);
-      arm.rotation.z = (i * Math.PI) / 3;
-      asteriskGroup.add(arm);
-    }
-    group.add(asteriskGroup);
-
-    // --- TARSIER wordmark (extruded letter boxes) ---
-    const wordGroup = new THREE.Group();
-    wordGroup.position.set(0, -1.28, 0);
-
-    const letterMat = new THREE.MeshStandardMaterial({
-      color: TARSIER_ORANGE,
-      metalness: 0.35,
-      roughness: 0.35,
-    });
-
-    // Simple block letters as flat extruded boxes
-    // Each letter: [x-offset, width]
-    const letters = [
-      { x: -2.1, w: 0.28 }, // T
-      { x: -1.62, w: 0.22 }, // A
-      { x: -1.18, w: 0.22 }, // R
-      { x: -0.74, w: 0.22 }, // S
-      { x: -0.28, w: 0.28 }, // I
-      { x: 0.18, w: 0.22 },  // E
-      { x: 0.62, w: 0.22 },  // R
-    ];
-
-    letters.forEach(({ x, w }) => {
-      const lMesh = new THREE.Mesh(
-        new THREE.BoxGeometry(w, 0.22, 0.16),
-        letterMat
-      );
-      lMesh.position.set(x, 0, 0);
-      wordGroup.add(lMesh);
-    });
-
-    // Horizontal bar for T and I (crossbars)
-    const crossbar = new THREE.Mesh(
-      new THREE.BoxGeometry(0.52, 0.07, 0.16),
-      letterMat
-    );
-    crossbar.position.set(-2.1, 0.08, 0);
-    wordGroup.add(crossbar);
-
-    group.add(wordGroup);
+    const logoPlane = new THREE.Mesh(planeGeo, planeMat);
+    scene.add(logoPlane);
 
     // --- Particles ---
     const positions = new Float32Array(PARTICLE_COUNT * 3);
@@ -232,16 +113,17 @@ const TarsierHero3D = () => {
       frameId = requestAnimationFrame(animate);
       t += 0.008;
 
-      // Smooth mouse follow
-      target.x += (mouse.x - target.x) * 0.06;
-      target.y += (mouse.y - target.y) * 0.06;
+      // Gentle floating
+      logoPlane.position.y = Math.sin(t * 0.6) * 0.12;
 
-      // Group rotation follows cursor
-      group.rotation.y = target.x * 0.28;
-      group.rotation.x = -target.y * 0.18;
+      // Very subtle tilt that follows mouse
+      target.x += (mouse.x - target.x) * 0.04;
+      target.y += (mouse.y - target.y) * 0.04;
+      logoPlane.rotation.y = target.x * 0.12;
+      logoPlane.rotation.x = -target.y * 0.08 - 0.05; // slight permanent downward tilt
 
-      // Subtle idle float
-      group.position.y = Math.sin(t * 0.6) * 0.06;
+      // Slow gentle spin on Y axis
+      logoPlane.rotation.y += Math.sin(t * 0.3) * 0.008;
 
       // Particle drift
       const pos = particleGeo.attributes.position as THREE.BufferAttribute;

@@ -3,7 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import clientVideo from '@/assets/client-showcase.mov';
+import clientVideo from '@/assets/cursorful-video-1773412428700.mp4';
 import iphoneModel from '@/assets/iphone_17_pro_max.glb?url';
 
 function Starfield() {
@@ -38,8 +38,8 @@ type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: numbe
 function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const { scene } = useGLTF(iphoneModel);
   const groupRef = useRef<THREE.Group>(null);
-  const currentRotY = useRef(-Math.PI / 2);
-  const currentRotX = useRef(0);
+  const currentRotY = useRef(Math.PI);
+  const currentRotX = useRef(-0.12);
 
   useEffect(() => {
     const video = document.createElement('video');
@@ -119,7 +119,7 @@ function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 export default function WebShowcase() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: true, margin: '-10%' });
-  const dragRef = useRef<DragState>({ rotX: 0, rotY: -Math.PI / 2, isDragging: false, lastX: 0, lastY: 0 });
+  const dragRef = useRef<DragState>({ rotX: -0.12, rotY: Math.PI, isDragging: false, lastX: 0, lastY: 0 });
 
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     dragRef.current.isDragging = true;
@@ -206,7 +206,7 @@ export default function WebShowcase() {
           <div className="absolute inset-0" style={{ paddingTop: '36px' }}>
             <Canvas
               style={{ width: '100%', height: '100%' }}
-              camera={{ position: [0, 0, 5], fov: 45 }}
+              camera={{ position: [0, 0.2, 4.2], fov: 45 }}
               gl={{ antialias: true, alpha: true }}
             >
               <SceneContent dragRef={dragRef} />
