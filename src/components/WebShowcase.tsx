@@ -42,6 +42,15 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const currentRotX = useRef(-0.12);
 
   useEffect(() => {
+    // Log ALL mesh names for debugging
+    const meshNames: string[] = [];
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        meshNames.push(child.name);
+      }
+    });
+    console.log('[WebShowcase] All mesh names in GLB:', meshNames);
+
     const video = document.createElement('video');
     video.src = clientVideo;
     video.loop = true;
@@ -56,42 +65,59 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     videoTexture.flipY = false;
     videoTexture.colorSpace = THREE.SRGBColorSpace;
 
-    let applied = false;
-    const meshNames: string[] = [];
     let screenMesh: THREE.Mesh | null = null;
 
+    // Pass 1: exact or keyword match
     scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        meshNames.push(child.name);
+      if (child instanceof THREE.Mesh && !screenMesh) {
         const n = child.name.toLowerCase();
-        // Primary: exact name or 'screen' substring
-        if (child.name === 'Cube.010_screen.001_0' || n.includes('screen')) {
+        if (
+          n.includes('screen') ||
+          n.includes('display') ||
+          n.includes('glass') ||
+          n.includes('lcd') ||
+          n.includes('panel') ||
+          n.includes('front')
+        ) {
           screenMesh = child;
+          console.log('[WebShowcase] Screen mesh matched by name:', child.name);
         }
       }
     });
 
-    // Fallback: find the flattest/largest mesh that could be a screen
+    // Pass 2: largest bounding box fallback (most likely the screen face)
     if (!screenMesh) {
+      let largestArea = 0;
       scene.traverse((child) => {
-        if (child instanceof THREE.Mesh && !screenMesh) {
-          const n = child.name.toLowerCase();
-          if (n.includes('display') || n.includes('glass') || n.includes('lcd') || n.includes('panel')) {
+        if (child instanceof THREE.Mesh) {
+          const box = new THREE.Box3().setFromObject(child);
+          const size = new THREE.Vector3();
+          box.getSize(size);
+          const area = size.x * size.y;
+          if (area > largestArea) {
+            largestArea = area;
             screenMesh = child;
           }
         }
       });
+      if (screenMesh) {
+        console.log('[WebShowcase] Screen mesh matched by largest bounding box:', (screenMesh as THREE.Mesh).name);
+      }
     }
 
     if (screenMesh) {
-      (screenMesh as THREE.Mesh).material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide });
+      (screenMesh as THREE.Mesh).material = new THREE.MeshBasicMaterial({
+        map: videoTexture,
+        side: THREE.FrontSide,
+      });
       ((screenMesh as THREE.Mesh).material as THREE.MeshBasicMaterial).needsUpdate = true;
-      applied = true;
+    } else {
+      console.warn('[WebShowcase] No screen mesh found at all.');
     }
 
-    if (!applied) {
-      console.warn('[WebShowcase] Screen mesh not found. Available meshes:', meshNames);
-    }
+    // Rotate the entire scene root so the phone front faces the camera.
+    // The GLB root is scene itself — set rotation here.
+    scene.rotation.y = Math.PI;
 
     video.play().catch((err) => console.warn('[WebShowcase] Video autoplay failed:', err));
 

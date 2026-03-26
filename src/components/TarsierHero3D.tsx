@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import tarsierLogoSrc from '@/assets/tarsier-logo.png';
 
 const TARSIER_ORANGE = 0xb85c2a;
-const PARTICLE_COUNT = 220;
+const PARTICLE_COUNT = 300;
 
 const TarsierHero3D = () => {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -12,8 +11,9 @@ const TarsierHero3D = () => {
     const mount = mountRef.current;
     if (!mount) return;
 
-    const W = mount.clientWidth;
-    const H = mount.clientHeight;
+    // Use the section dimensions (mount fills the section via absolute inset-0)
+    const W = mount.offsetWidth || window.innerWidth;
+    const H = mount.offsetHeight || window.innerHeight;
 
     // --- Renderer ---
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -26,10 +26,10 @@ const TarsierHero3D = () => {
 
     // --- Scene & Camera ---
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
-    camera.position.set(0, 0, 5);
+    const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 100);
+    camera.position.set(0, 0, 7);
 
-    // --- Particles ---
+    // --- Particles spread across full section ---
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const velocities: THREE.Vector3[] = [];
     const basePositions: THREE.Vector3[] = [];
@@ -37,7 +37,8 @@ const TarsierHero3D = () => {
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
-      const r = 1.8 + Math.random() * 2.4;
+      // Bigger spread to fill the full hero
+      const r = 2.8 + Math.random() * 4.0;
       const x = r * Math.sin(phi) * Math.cos(theta);
       const y = r * Math.sin(phi) * Math.sin(theta);
       const z = r * Math.cos(phi);
@@ -59,30 +60,34 @@ const TarsierHero3D = () => {
 
     const particleMat = new THREE.PointsMaterial({
       color: TARSIER_ORANGE,
-      size: 0.045,
+      size: 0.05,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.7,
       sizeAttenuation: true,
     });
 
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
 
-    // --- Mouse tracking ---
+    // --- Mouse tracking — normalized to full section/window ---
     const mouse = new THREE.Vector2(0, 0);
     const target = new THREE.Vector2(0, 0);
 
     const onMouseMove = (e: MouseEvent) => {
+      // Normalize to [-1, 1] using full viewport/section coordinates
       const rect = mount.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
       mouse.y = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
     };
-    window.addEventListener('mousemove', onMouseMove);
+
+    // Attach to the section element (mount's parent or window) for full coverage
+    const section = mount.closest('section') || window;
+    section.addEventListener('mousemove', onMouseMove as EventListener);
 
     // --- Resize ---
     const onResize = () => {
-      const w = mount.clientWidth;
-      const h = mount.clientHeight;
+      const w = mount.offsetWidth || window.innerWidth;
+      const h = mount.offsetHeight || window.innerHeight;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -91,13 +96,11 @@ const TarsierHero3D = () => {
 
     // --- Animate ---
     let frameId: number;
-    let t = 0;
 
     const animate = () => {
       frameId = requestAnimationFrame(animate);
-      t += 0.008;
 
-      // Mouse tilt for particles
+      // Smooth mouse follow
       target.x += (mouse.x - target.x) * 0.04;
       target.y += (mouse.y - target.y) * 0.04;
 
@@ -123,9 +126,9 @@ const TarsierHero3D = () => {
       }
       pos.needsUpdate = true;
 
-      // Particle group follows cursor subtly
-      particles.rotation.y = target.x * 0.12;
-      particles.rotation.x = -target.y * 0.08;
+      // Particles tilt with mouse
+      particles.rotation.y = target.x * 0.15;
+      particles.rotation.x = -target.y * 0.1;
 
       renderer.render(scene, camera);
     };
@@ -133,7 +136,7 @@ const TarsierHero3D = () => {
 
     return () => {
       cancelAnimationFrame(frameId);
-      window.removeEventListener('mousemove', onMouseMove);
+      section.removeEventListener('mousemove', onMouseMove as EventListener);
       window.removeEventListener('resize', onResize);
       renderer.dispose();
       if (mount.contains(renderer.domElement)) {
@@ -145,18 +148,8 @@ const TarsierHero3D = () => {
   return (
     <div
       ref={mountRef}
-      className="w-full h-full max-h-[320px] lg:max-h-none relative"
-      style={{ minHeight: '420px' }}
-    >
-      {/* Logo image — sits above canvas, below hero text z-stack */}
-      <img
-        src={tarsierLogoSrc}
-        alt="Tarsier"
-        className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
-        style={{ zIndex: 1 }}
-        draggable={false}
-      />
-    </div>
+      className="absolute inset-0 w-full h-full"
+    />
   );
 };
 

@@ -8,6 +8,9 @@ const HeroSection = () => {
       {/* Subtle warm radial gradient */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,hsl(22_68%_45%_/_0.07),transparent)]" />
 
+      {/* Three.js particles — full section background */}
+      <TarsierHero3D />
+
       <div className="max-w-[1280px] mx-auto px-6 lg:px-12 pt-32 pb-20 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
 
@@ -60,14 +63,19 @@ const HeroSection = () => {
             </motion.div>
           </div>
 
-          {/* Right — Three.js 3D Scene */}
+          {/* Right — Logo image */}
           <motion.div
             className="flex items-center justify-center w-full h-[420px] lg:h-[560px]"
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <TarsierHero3D />
+            <img
+              src={tarsierLogo}
+              alt="Tarsier"
+              className="w-full h-full object-contain pointer-events-none select-none"
+              draggable={false}
+            />
           </motion.div>
 
         </div>
