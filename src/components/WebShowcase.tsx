@@ -41,6 +41,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
+  const sceneRef = useRef<THREE.Group | null>(null);
 
   useEffect(() => {
     // Log ALL mesh names for debugging
@@ -74,27 +75,9 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     videoTexture.colorSpace = THREE.SRGBColorSpace;
     videoTextureRef.current = videoTexture;
 
-    // Hardcoded match — confirmed mesh name from console logs
-    let screenMesh: THREE.Mesh | null = null;
-    scene.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.name === 'Cube010_screen001_0') {
-        screenMesh = child;
-      }
-    });
-
-    if (screenMesh) {
-      console.log('[WebShowcase] Screen mesh found:', (screenMesh as THREE.Mesh).name);
-      // Replace material entirely — do not mutate existing material
-      const mat = new THREE.MeshBasicMaterial({
-        map: videoTexture,
-        side: THREE.FrontSide,
-        toneMapped: false,
-      });
-      (screenMesh as THREE.Mesh).material = mat;
-      mat.needsUpdate = true;
-    } else {
-      console.warn('[WebShowcase] Screen mesh "Cube010_screen001_0" not found. All meshes:', meshNames);
-    }
+    // Store scene reference for useFrame material guard
+    sceneRef.current = scene as unknown as THREE.Group;
+    console.log('[WebShowcase] sceneRef set, mesh count:', meshNames.length);
 
     // Rotate the entire scene root so the phone front faces the camera.
     // The GLB root is scene itself — set rotation here.
@@ -118,8 +101,24 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     groupRef.current.rotation.y = currentRotY.current + Math.sin(state.clock.elapsedTime * 0.4) * 0.04;
     groupRef.current.rotation.x = currentRotX.current;
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.03;
-    // Force video texture to update every frame
-    if (videoTextureRef.current) videoTextureRef.current.needsUpdate = true;
+
+    // Re-apply screen material every frame — prevents R3F/GLB reconciler from overwriting it
+    if (sceneRef.current && videoTextureRef.current) {
+      sceneRef.current.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh && child.name === 'Cube010_screen001_0') {
+          const mesh = child as THREE.Mesh;
+          if (!(mesh.material instanceof THREE.MeshBasicMaterial)) {
+            mesh.material = new THREE.MeshBasicMaterial({
+              map: videoTextureRef.current,
+              side: THREE.FrontSide,
+              toneMapped: false,
+            });
+            mesh.material.needsUpdate = true;
+          }
+          videoTextureRef.current.needsUpdate = true;
+        }
+      });
+    }
   });
 
   return (
