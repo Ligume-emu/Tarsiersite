@@ -3,8 +3,8 @@ import { motion, useInView } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import clientVideo from '../assets/client-showcase.mov';
-import iphoneModel from '../assets/iphone_17_pro_max.glb?url';
+import clientVideo from '@/assets/client-showcase.mov';
+import iphoneModel from '@/assets/iphone_17_pro_max.glb?url';
 
 function Starfield() {
   const stars = Array.from({ length: 140 }, (_, i) => ({
@@ -57,8 +57,10 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     videoTexture.colorSpace = THREE.SRGBColorSpace;
 
     let applied = false;
+    const meshNames: string[] = [];
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
+        meshNames.push(child.name);
         const n = child.name.toLowerCase();
         if (child.name === 'Cube.010_screen.001_0' || n.includes('screen')) {
           child.material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide });
@@ -69,16 +71,10 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     });
 
     if (!applied) {
-      // fallback: apply to every mesh so we can see it render
-      scene.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.material = new THREE.MeshBasicMaterial({ map: videoTexture });
-          (child.material as THREE.MeshBasicMaterial).needsUpdate = true;
-        }
-      });
+      console.warn('[WebShowcase] Screen mesh not found. Available meshes:', meshNames);
     }
 
-    video.play().catch(() => {});
+    video.play().catch((err) => console.warn('[WebShowcase] Video autoplay failed:', err));
 
     return () => {
       video.pause();

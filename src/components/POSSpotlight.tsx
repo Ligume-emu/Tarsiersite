@@ -1,5 +1,4 @@
 import FadeUp from '@/components/FadeUp';
-import posDemoGif from '@/assets/pos-demo.gif';
 
 const POSSpotlight = () => (
   <section className="py-28 lg:py-36 bg-bg-dark overflow-hidden">
@@ -21,11 +20,9 @@ const POSSpotlight = () => (
       {/* GIF showcase */}
       <FadeUp delay={0.2}>
         <div className="relative rounded-2xl overflow-hidden border border-tarsier/20 shadow-[0_32px_80px_rgba(0,0,0,0.4)]">
-          <img
-            src={posDemoGif}
-            alt="TarsierPOS in action"
-            className="w-full h-auto object-cover"
-          />
+          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center rounded-xl" style={{ minHeight: '320px' }}>
+            <span className="text-white/40 text-sm">Demo Preview</span>
+          </div>
           {/* Gradient overlay — bottom */}
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-bg-dark to-transparent" />
         </div>

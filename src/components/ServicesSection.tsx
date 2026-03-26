@@ -1,5 +1,4 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import posDemoGif from "@/assets/pos-demo.gif";
 
 interface ServiceTile {
   name: string;
@@ -101,7 +100,7 @@ const PillarSection = ({ number, pillar, tagline, headline, subheadline, tiles, 
 const visionTiles: ServiceTile[] = [
   { name: "Custom Web Application Development", desc: "Fully bespoke web systems built around how your business actually works.", size: "wide", icon: "🌐", gif: "https://media.giphy.com/media/qgQUggAC3Pfv687qPC/giphy.gif" },
   { name: "Mobile App Development", desc: "iOS and Android apps your customers will actually use.", size: "standard", icon: "📱" },
-  { name: "Point of Sale (POS) System", desc: "Built for Philippine retail. Cloud-synced, offline-ready, multi-cashier.", size: "standard", icon: "💳", gif: posDemoGif },
+  { name: "Point of Sale (POS) System", desc: "Built for Philippine retail. Cloud-synced, offline-ready, multi-cashier.", size: "standard", icon: "💳" },
   { name: "E-Commerce & Online Store", desc: "Sell anywhere. Ship everywhere. Own the experience.", size: "tall", icon: "🛒" },
   { name: "Real Estate Property Portal", desc: "Listings, agents, inquiries — one intelligent platform.", size: "standard", icon: "🏠" },
   { name: "Booking & Reservation System", desc: "From restaurants to clinics — let customers book themselves.", size: "standard", icon: "📅" },
