@@ -40,6 +40,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const groupRef = useRef<THREE.Group>(null);
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
+  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
     // Log ALL mesh names for debugging
@@ -58,71 +59,38 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     video.playsInline = true;
     video.autoplay = true;
     video.setAttribute('playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('loop', '');
+    // Must be in DOM for autoplay to work on some browsers
+    video.style.display = 'none';
+    document.body.appendChild(video);
 
     const videoTexture = new THREE.VideoTexture(video);
     videoTexture.minFilter = THREE.LinearFilter;
     videoTexture.magFilter = THREE.LinearFilter;
     videoTexture.flipY = false;
     videoTexture.colorSpace = THREE.SRGBColorSpace;
+    videoTextureRef.current = videoTexture;
 
+    // Hardcoded match — confirmed mesh name from console logs
     let screenMesh: THREE.Mesh | null = null;
-
-    // Pass 1: name contains "screen" (highest priority)
     scene.traverse((child) => {
-      if (child instanceof THREE.Mesh && !screenMesh) {
-        if (child.name.toLowerCase().includes('screen')) {
-          screenMesh = child;
-          console.log('[WebShowcase] Screen mesh matched: screen keyword —', child.name);
-        }
+      if (child instanceof THREE.Mesh && child.name === 'Cube010_screen001_0') {
+        screenMesh = child;
       }
     });
 
-    // Pass 2: display / lcd / front keywords
-    if (!screenMesh) {
-      scene.traverse((child) => {
-        if (child instanceof THREE.Mesh && !screenMesh) {
-          const n = child.name.toLowerCase();
-          if (n.includes('display') || n.includes('lcd') || n.includes('front')) {
-            screenMesh = child;
-            console.log('[WebShowcase] Screen mesh matched: display/lcd/front keyword —', child.name);
-          }
-        }
-      });
-    }
-
-    // Pass 3: largest flat rectangular bounding box (largest XY area WITH smallest Z depth)
-    // This targets the flat screen face, not round camera lenses (which have similar X/Y but thicker Z)
-    if (!screenMesh) {
-      let bestScore = 0;
-      scene.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          const box = new THREE.Box3().setFromObject(child);
-          const size = new THREE.Vector3();
-          box.getSize(size);
-          const xyArea = size.x * size.y;
-          const zDepth = Math.max(size.z, 0.001);
-          // Score = XY area divided by Z depth — flat wide meshes score highest
-          const score = xyArea / zDepth;
-          if (score > bestScore) {
-            bestScore = score;
-            screenMesh = child;
-          }
-        }
-      });
-      if (screenMesh) {
-        console.log('[WebShowcase] Screen mesh matched: flattest/largest —', (screenMesh as THREE.Mesh).name);
-      }
-    }
-
     if (screenMesh) {
-      // Apply to exactly one mesh only
+      console.log('[WebShowcase] Screen mesh found:', (screenMesh as THREE.Mesh).name);
+      // Replace material entirely — do not mutate existing material
       (screenMesh as THREE.Mesh).material = new THREE.MeshBasicMaterial({
         map: videoTexture,
         side: THREE.FrontSide,
+        toneMapped: false,
       });
-      ((screenMesh as THREE.Mesh).material as THREE.MeshBasicMaterial).needsUpdate = true;
     } else {
-      console.warn('[WebShowcase] No screen mesh found.');
+      console.warn('[WebShowcase] Screen mesh "Cube010_screen001_0" not found. All meshes:', meshNames);
     }
 
     // Rotate the entire scene root so the phone front faces the camera.
@@ -133,7 +101,9 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 
     return () => {
       video.pause();
+      document.body.removeChild(video);
       videoTexture.dispose();
+      videoTextureRef.current = null;
     };
   }, [scene]);
 
@@ -145,6 +115,8 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     groupRef.current.rotation.y = currentRotY.current + Math.sin(state.clock.elapsedTime * 0.4) * 0.04;
     groupRef.current.rotation.x = currentRotX.current;
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.03;
+    // Force video texture to update every frame
+    if (videoTextureRef.current) videoTextureRef.current.needsUpdate = true;
   });
 
   return (
