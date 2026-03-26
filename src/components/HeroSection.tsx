@@ -1,15 +1,63 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import tarsierLogo from "@/assets/tarsier-logo.png";
 import TarsierHero3D from "@/components/TarsierHero3D";
 
 const HeroSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const logoRef = useRef<HTMLImageElement>(null);
+  // Shared smoothed tilt state passed into TarsierHero3D
+  const tiltRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let rafId: number;
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = section.getBoundingClientRect();
+      targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      targetY = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    };
+
+    const tick = () => {
+      rafId = requestAnimationFrame(tick);
+      // Smooth interpolation
+      currentX += (targetX - currentX) * 0.06;
+      currentY += (targetY - currentY) * 0.06;
+      // Expose to TarsierHero3D
+      tiltRef.current.x = currentX;
+      tiltRef.current.y = currentY;
+      // Apply parallax to logo — slightly less travel than particles for depth
+      if (logoRef.current) {
+        logoRef.current.style.transform = `translate(${currentX * 18}px, ${currentY * 12}px)`;
+      }
+    };
+
+    section.addEventListener('mousemove', onMouseMove);
+    tick();
+
+    return () => {
+      section.removeEventListener('mousemove', onMouseMove);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   return (
-    <section className="relative min-h-screen bg-bg-warm flex flex-col justify-center overflow-hidden">
+    <section
+      ref={sectionRef}
+      className="relative min-h-screen bg-bg-warm flex flex-col justify-center overflow-hidden"
+    >
       {/* Subtle warm radial gradient */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,hsl(22_68%_45%_/_0.07),transparent)]" />
 
       {/* Three.js particles — full section background */}
-      <TarsierHero3D />
+      <TarsierHero3D tiltRef={tiltRef} />
 
       <div className="max-w-[1280px] mx-auto px-6 lg:px-12 pt-32 pb-20 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
@@ -63,7 +111,7 @@ const HeroSection = () => {
             </motion.div>
           </div>
 
-          {/* Right — Logo image */}
+          {/* Right — Logo image with cursor parallax */}
           <motion.div
             className="flex items-center justify-center w-full h-[420px] lg:h-[560px]"
             initial={{ opacity: 0, scale: 0.92 }}
@@ -71,9 +119,11 @@ const HeroSection = () => {
             transition={{ duration: 1.1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
             <img
+              ref={logoRef}
               src={tarsierLogo}
               alt="Tarsier"
               className="w-full h-full object-contain pointer-events-none select-none"
+              style={{ transition: 'transform 0.15s ease-out', willChange: 'transform' }}
               draggable={false}
             />
           </motion.div>

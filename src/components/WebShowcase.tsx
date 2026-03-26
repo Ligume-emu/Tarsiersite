@@ -67,52 +67,62 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 
     let screenMesh: THREE.Mesh | null = null;
 
-    // Pass 1: exact or keyword match
+    // Pass 1: name contains "screen" (highest priority)
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh && !screenMesh) {
-        const n = child.name.toLowerCase();
-        if (
-          n.includes('screen') ||
-          n.includes('display') ||
-          n.includes('glass') ||
-          n.includes('lcd') ||
-          n.includes('panel') ||
-          n.includes('front')
-        ) {
+        if (child.name.toLowerCase().includes('screen')) {
           screenMesh = child;
-          console.log('[WebShowcase] Screen mesh matched by name:', child.name);
+          console.log('[WebShowcase] Screen mesh matched: screen keyword —', child.name);
         }
       }
     });
 
-    // Pass 2: largest bounding box fallback (most likely the screen face)
+    // Pass 2: display / lcd / front keywords
     if (!screenMesh) {
-      let largestArea = 0;
+      scene.traverse((child) => {
+        if (child instanceof THREE.Mesh && !screenMesh) {
+          const n = child.name.toLowerCase();
+          if (n.includes('display') || n.includes('lcd') || n.includes('front')) {
+            screenMesh = child;
+            console.log('[WebShowcase] Screen mesh matched: display/lcd/front keyword —', child.name);
+          }
+        }
+      });
+    }
+
+    // Pass 3: largest flat rectangular bounding box (largest XY area WITH smallest Z depth)
+    // This targets the flat screen face, not round camera lenses (which have similar X/Y but thicker Z)
+    if (!screenMesh) {
+      let bestScore = 0;
       scene.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           const box = new THREE.Box3().setFromObject(child);
           const size = new THREE.Vector3();
           box.getSize(size);
-          const area = size.x * size.y;
-          if (area > largestArea) {
-            largestArea = area;
+          const xyArea = size.x * size.y;
+          const zDepth = Math.max(size.z, 0.001);
+          // Score = XY area divided by Z depth — flat wide meshes score highest
+          const score = xyArea / zDepth;
+          if (score > bestScore) {
+            bestScore = score;
             screenMesh = child;
           }
         }
       });
       if (screenMesh) {
-        console.log('[WebShowcase] Screen mesh matched by largest bounding box:', (screenMesh as THREE.Mesh).name);
+        console.log('[WebShowcase] Screen mesh matched: flattest/largest —', (screenMesh as THREE.Mesh).name);
       }
     }
 
     if (screenMesh) {
+      // Apply to exactly one mesh only
       (screenMesh as THREE.Mesh).material = new THREE.MeshBasicMaterial({
         map: videoTexture,
         side: THREE.FrontSide,
       });
       ((screenMesh as THREE.Mesh).material as THREE.MeshBasicMaterial).needsUpdate = true;
     } else {
-      console.warn('[WebShowcase] No screen mesh found at all.');
+      console.warn('[WebShowcase] No screen mesh found.');
     }
 
     // Rotate the entire scene root so the phone front faces the camera.

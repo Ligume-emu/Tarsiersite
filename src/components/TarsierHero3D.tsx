@@ -4,14 +4,17 @@ import * as THREE from 'three';
 const TARSIER_ORANGE = 0xb85c2a;
 const PARTICLE_COUNT = 300;
 
-const TarsierHero3D = () => {
+interface TarsierHero3DProps {
+  tiltRef?: React.RefObject<{ x: number; y: number }>;
+}
+
+const TarsierHero3D = ({ tiltRef }: TarsierHero3DProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
 
-    // Use the section dimensions (mount fills the section via absolute inset-0)
     const W = mount.offsetWidth || window.innerWidth;
     const H = mount.offsetHeight || window.innerHeight;
 
@@ -29,7 +32,7 @@ const TarsierHero3D = () => {
     const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 100);
     camera.position.set(0, 0, 7);
 
-    // --- Particles spread across full section ---
+    // --- Particles ---
     const positions = new Float32Array(PARTICLE_COUNT * 3);
     const velocities: THREE.Vector3[] = [];
     const basePositions: THREE.Vector3[] = [];
@@ -37,7 +40,6 @@ const TarsierHero3D = () => {
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
-      // Bigger spread to fill the full hero
       const r = 2.8 + Math.random() * 4.0;
       const x = r * Math.sin(phi) * Math.cos(theta);
       const y = r * Math.sin(phi) * Math.sin(theta);
@@ -69,21 +71,6 @@ const TarsierHero3D = () => {
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
 
-    // --- Mouse tracking — normalized to full section/window ---
-    const mouse = new THREE.Vector2(0, 0);
-    const target = new THREE.Vector2(0, 0);
-
-    const onMouseMove = (e: MouseEvent) => {
-      // Normalize to [-1, 1] using full viewport/section coordinates
-      const rect = mount.getBoundingClientRect();
-      mouse.x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      mouse.y = -((e.clientY - rect.top) / rect.height - 0.5) * 2;
-    };
-
-    // Attach to the section element (mount's parent or window) for full coverage
-    const section = mount.closest('section') || window;
-    section.addEventListener('mousemove', onMouseMove as EventListener);
-
     // --- Resize ---
     const onResize = () => {
       const w = mount.offsetWidth || window.innerWidth;
@@ -100,9 +87,9 @@ const TarsierHero3D = () => {
     const animate = () => {
       frameId = requestAnimationFrame(animate);
 
-      // Smooth mouse follow
-      target.x += (mouse.x - target.x) * 0.04;
-      target.y += (mouse.y - target.y) * 0.04;
+      // Use shared tilt from HeroSection if provided, otherwise no tilt
+      const tx = tiltRef?.current?.x ?? 0;
+      const ty = tiltRef?.current?.y ?? 0;
 
       // Particle drift
       const pos = particleGeo.attributes.position as THREE.BufferAttribute;
@@ -113,12 +100,10 @@ const TarsierHero3D = () => {
         pos.array[i * 3 + 1] += vel.y;
         pos.array[i * 3 + 2] += vel.z;
 
-        // Pull back toward base position
         pos.array[i * 3] += (base.x - pos.array[i * 3]) * 0.008;
         pos.array[i * 3 + 1] += (base.y - pos.array[i * 3 + 1]) * 0.008;
         pos.array[i * 3 + 2] += (base.z - pos.array[i * 3 + 2]) * 0.008;
 
-        // Slight orbit
         const ox = pos.array[i * 3];
         const oz = pos.array[i * 3 + 2];
         pos.array[i * 3] = ox * Math.cos(0.002) - oz * Math.sin(0.002);
@@ -126,9 +111,9 @@ const TarsierHero3D = () => {
       }
       pos.needsUpdate = true;
 
-      // Particles tilt with mouse
-      particles.rotation.y = target.x * 0.15;
-      particles.rotation.x = -target.y * 0.1;
+      // Particles tilt with cursor — more travel than logo for depth layering
+      particles.rotation.y = tx * 0.2;
+      particles.rotation.x = -ty * 0.15;
 
       renderer.render(scene, camera);
     };
@@ -136,7 +121,6 @@ const TarsierHero3D = () => {
 
     return () => {
       cancelAnimationFrame(frameId);
-      section.removeEventListener('mousemove', onMouseMove as EventListener);
       window.removeEventListener('resize', onResize);
       renderer.dispose();
       if (mount.contains(renderer.domElement)) {
