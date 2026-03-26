@@ -69,6 +69,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     const videoTexture = new THREE.VideoTexture(video);
     videoTexture.minFilter = THREE.LinearFilter;
     videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.format = THREE.RGBAFormat;
     videoTexture.flipY = false;
     videoTexture.colorSpace = THREE.SRGBColorSpace;
     videoTextureRef.current = videoTexture;
@@ -84,11 +85,13 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     if (screenMesh) {
       console.log('[WebShowcase] Screen mesh found:', (screenMesh as THREE.Mesh).name);
       // Replace material entirely — do not mutate existing material
-      (screenMesh as THREE.Mesh).material = new THREE.MeshBasicMaterial({
+      const mat = new THREE.MeshBasicMaterial({
         map: videoTexture,
         side: THREE.FrontSide,
         toneMapped: false,
       });
+      (screenMesh as THREE.Mesh).material = mat;
+      mat.needsUpdate = true;
     } else {
       console.warn('[WebShowcase] Screen mesh "Cube010_screen001_0" not found. All meshes:', meshNames);
     }
