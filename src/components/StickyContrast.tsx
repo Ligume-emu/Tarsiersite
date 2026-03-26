@@ -47,7 +47,7 @@ const StickyContrast = () => {
         <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
           {/* Left — scrolling statements */}
-          <div className="relative h-[280px]">
+          <div className="relative h-[320px] sm:h-[280px]">
             {statements.map((s, i) => (
               <motion.div
                 key={i}

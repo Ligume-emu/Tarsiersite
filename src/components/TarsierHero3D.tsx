@@ -287,7 +287,7 @@ const TarsierHero3D = () => {
   return (
     <div
       ref={mountRef}
-      className="w-full h-full"
+      className="w-full h-full max-h-[320px] lg:max-h-none"
       style={{ minHeight: '420px' }}
     />
   );

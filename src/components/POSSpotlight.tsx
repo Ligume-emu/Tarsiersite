@@ -1,4 +1,5 @@
 import FadeUp from '@/components/FadeUp';
+import posDemoGif from '@/assets/cursorful-video-1773413007416.gif';
 
 const POSSpotlight = () => (
   <section className="py-28 lg:py-36 bg-bg-dark overflow-hidden">
@@ -20,9 +21,13 @@ const POSSpotlight = () => (
       {/* GIF showcase */}
       <FadeUp delay={0.2}>
         <div className="relative rounded-2xl overflow-hidden border border-tarsier/20 shadow-[0_32px_80px_rgba(0,0,0,0.4)]">
-          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center rounded-xl" style={{ minHeight: '320px' }}>
-            <span className="text-white/40 text-sm">Demo Preview</span>
-          </div>
+          <img
+            src={posDemoGif}
+            alt="TarsierPOS Demo"
+            className="w-full h-auto object-cover rounded-xl"
+            loading="lazy"
+            style={{ minHeight: '280px', maxHeight: '520px' }}
+          />
           {/* Gradient overlay — bottom */}
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-bg-dark to-transparent" />
         </div>
@@ -41,6 +46,17 @@ const POSSpotlight = () => (
               <div className="font-body text-[14px] text-text-on-dark/50">{item.desc}</div>
             </div>
           ))}
+        </div>
+      </FadeUp>
+
+      <FadeUp delay={0.5}>
+        <div className="mt-12 flex flex-col sm:flex-row gap-4">
+          <a
+            href="/#contact"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-tarsier text-primary-foreground font-body text-[15px] font-medium hover:bg-[#9A4A20] transition-colors shadow-[0_4px_24px_hsl(22_68%_45%_/_0.3)] min-h-[44px]"
+          >
+            Get TarsierPOS →
+          </a>
         </div>
       </FadeUp>
 

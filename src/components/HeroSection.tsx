@@ -26,7 +26,7 @@ const HeroSection = () => {
             </motion.div>
 
             <motion.h1
-              className="font-display text-[56px] sm:text-[68px] lg:text-[76px] font-bold text-text-primary leading-[1.0] mb-6"
+              className="font-display text-[44px] sm:text-[56px] md:text-[68px] lg:text-[76px] font-bold text-text-primary leading-[1.0] mb-6"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
@@ -53,7 +53,7 @@ const HeroSection = () => {
             >
               <a
                 href="#contact"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-tarsier text-primary-foreground font-body text-[15px] font-medium hover:bg-[#9A4A20] transition-colors shadow-[0_4px_24px_hsl(22_68%_45%_/_0.3)]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-tarsier text-primary-foreground font-body text-[15px] font-medium hover:bg-[#9A4A20] transition-colors shadow-[0_4px_24px_hsl(22_68%_45%_/_0.3)] min-h-[44px]"
               >
                 Get a Free Audit →
               </a>

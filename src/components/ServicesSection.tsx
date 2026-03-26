@@ -1,4 +1,8 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import crmGif from '@/assets/CRM.gif';
+import landingPageGif from '@/assets/LANDINGPAGE.gif';
+import pipelineGif from '@/assets/PIPELINE.gif';
+import smsGif from '@/assets/SMS.gif';
 
 interface ServiceTile {
   name: string;
@@ -59,11 +63,11 @@ const PillarSection = ({ number, pillar, tagline, headline, subheadline, tiles, 
           {subheadline}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 auto-rows-[240px] lg:auto-rows-[260px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 auto-rows-[200px] sm:auto-rows-[240px] lg:auto-rows-[260px]">
           {tiles.map((tile, i) => (
             <div
               key={i}
-              className={`scroll-reveal group relative rounded-2xl overflow-hidden cursor-pointer ${sizeClasses[tile.size]} hover:scale-[1.02] transition-all duration-300 hover:shadow-[0_16px_48px_rgba(184,92,42,0.15)]`}
+              className={`scroll-reveal group relative rounded-2xl overflow-hidden cursor-pointer ${sizeClasses[tile.size]} hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 hover:shadow-[0_16px_48px_rgba(184,92,42,0.15)]`}
               style={{ transitionDelay: `${i * 0.08}s` }}
             >
               <div className="absolute inset-0 bg-bg-dark">
@@ -98,9 +102,9 @@ const PillarSection = ({ number, pillar, tagline, headline, subheadline, tiles, 
 };
 
 const visionTiles: ServiceTile[] = [
-  { name: "Custom Web Application Development", desc: "Fully bespoke web systems built around how your business actually works.", size: "wide", icon: "🌐", gif: "https://media.giphy.com/media/qgQUggAC3Pfv687qPC/giphy.gif" },
+  { name: "Custom Web Application Development", desc: "Fully bespoke web systems built around how your business actually works.", size: "wide", icon: "🌐", gif: landingPageGif },
   { name: "Mobile App Development", desc: "iOS and Android apps your customers will actually use.", size: "standard", icon: "📱" },
-  { name: "Point of Sale (POS) System", desc: "Built for Philippine retail. Cloud-synced, offline-ready, multi-cashier.", size: "standard", icon: "💳" },
+  { name: "Point of Sale (POS) System", desc: "Built for Philippine retail. Cloud-synced, offline-ready, multi-cashier.", size: "standard", icon: "💳", gif: pipelineGif },
   { name: "E-Commerce & Online Store", desc: "Sell anywhere. Ship everywhere. Own the experience.", size: "tall", icon: "🛒" },
   { name: "Real Estate Property Portal", desc: "Listings, agents, inquiries — one intelligent platform.", size: "standard", icon: "🏠" },
   { name: "Booking & Reservation System", desc: "From restaurants to clinics — let customers book themselves.", size: "standard", icon: "📅" },
@@ -109,10 +113,10 @@ const visionTiles: ServiceTile[] = [
 ];
 
 const automationTiles: ServiceTile[] = [
-  { name: "CRM System Setup & Automation", desc: "Capture every lead. Nurture every customer. Close more deals on autopilot.", size: "wide", icon: "🤖" },
+  { name: "CRM System Setup & Automation", desc: "Capture every lead. Nurture every customer. Close more deals on autopilot.", size: "wide", icon: "🤖", gif: crmGif },
   { name: "Sales Funnel Design & Build", desc: "A system that turns strangers into paying customers, step by step.", size: "standard", icon: "🎯" },
   { name: "Landing Page Development", desc: "High-converting pages that don't just look good — they perform.", size: "standard", icon: "🚀" },
-  { name: "Email & SMS Marketing Automation", desc: "The right message, to the right person, at exactly the right time.", size: "tall", icon: "✉️" },
+  { name: "Email & SMS Marketing Automation", desc: "The right message, to the right person, at exactly the right time.", size: "tall", icon: "✉️", gif: smsGif },
   { name: "Lead Generation Systems", desc: "A steady pipeline of qualified prospects — without cold calling.", size: "standard", icon: "🧲" },
   { name: "Social Media Management", desc: "20 pieces of content per day. Every platform. Consistent. Strategic.", size: "standard", icon: "📣" },
   { name: "Paid Ads Setup & Management", desc: "Every peso of your ad budget working harder than it ever has.", size: "wide", icon: "💰" },

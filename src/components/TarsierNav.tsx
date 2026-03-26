@@ -75,7 +75,7 @@ const TarsierNav = () => {
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="font-display text-4xl font-semibold text-text-primary hover:text-tarsier transition-colors"
+              className="font-display text-4xl font-semibold text-text-primary hover:text-tarsier transition-colors min-h-[44px] flex items-center"
             >
               {link.label}
             </a>
@@ -83,7 +83,7 @@ const TarsierNav = () => {
           <a
             href="/#contact"
             onClick={() => setMobileOpen(false)}
-            className="mt-4 px-8 py-3 rounded-full bg-tarsier text-primary-foreground font-body text-base"
+            className="mt-4 px-8 py-3 rounded-full bg-tarsier text-primary-foreground font-body text-base min-h-[44px]"
           >
             Get a Free Audit →
           </a>

@@ -49,6 +49,21 @@ export default function PreFooterCTA() {
         >
           something together.
         </motion.h2>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-12 mb-20"
+        >
+          <a
+            href="/#contact"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-tarsier text-primary-foreground font-body text-[15px] font-medium hover:bg-[#9A4A20] transition-colors shadow-[0_4px_24px_hsl(22_68%_45%_/_0.3)] min-h-[44px]"
+          >
+            Start a Conversation →
+          </a>
+        </motion.div>
       </div>
     </section>
   );
