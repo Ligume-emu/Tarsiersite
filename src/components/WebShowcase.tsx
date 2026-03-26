@@ -38,7 +38,7 @@ type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: numbe
 function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const { scene } = useGLTF(iphoneModel);
   const groupRef = useRef<THREE.Group>(null);
-  const currentRotY = useRef(Math.PI);
+  const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
 
   useEffect(() => {
@@ -58,17 +58,36 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 
     let applied = false;
     const meshNames: string[] = [];
+    let screenMesh: THREE.Mesh | null = null;
+
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         meshNames.push(child.name);
         const n = child.name.toLowerCase();
+        // Primary: exact name or 'screen' substring
         if (child.name === 'Cube.010_screen.001_0' || n.includes('screen')) {
-          child.material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide });
-          (child.material as THREE.MeshBasicMaterial).needsUpdate = true;
-          applied = true;
+          screenMesh = child;
         }
       }
     });
+
+    // Fallback: find the flattest/largest mesh that could be a screen
+    if (!screenMesh) {
+      scene.traverse((child) => {
+        if (child instanceof THREE.Mesh && !screenMesh) {
+          const n = child.name.toLowerCase();
+          if (n.includes('display') || n.includes('glass') || n.includes('lcd') || n.includes('panel')) {
+            screenMesh = child;
+          }
+        }
+      });
+    }
+
+    if (screenMesh) {
+      (screenMesh as THREE.Mesh).material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.FrontSide });
+      ((screenMesh as THREE.Mesh).material as THREE.MeshBasicMaterial).needsUpdate = true;
+      applied = true;
+    }
 
     if (!applied) {
       console.warn('[WebShowcase] Screen mesh not found. Available meshes:', meshNames);
@@ -119,7 +138,7 @@ function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 export default function WebShowcase() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: true, margin: '-10%' });
-  const dragRef = useRef<DragState>({ rotX: -0.12, rotY: Math.PI, isDragging: false, lastX: 0, lastY: 0 });
+  const dragRef = useRef<DragState>({ rotX: -0.12, rotY: 0.15, isDragging: false, lastX: 0, lastY: 0 });
 
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     dragRef.current.isDragging = true;

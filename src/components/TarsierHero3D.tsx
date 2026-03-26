@@ -20,30 +20,14 @@ const TarsierHero3D = () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0);
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.inset = '0';
     mount.appendChild(renderer.domElement);
 
     // --- Scene & Camera ---
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
     camera.position.set(0, 0, 5);
-
-    // --- Lighting ---
-    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
-    scene.add(ambient);
-
-    // --- Logo plane ---
-    const loader = new THREE.TextureLoader();
-    const logoTexture = loader.load(tarsierLogoSrc);
-
-    const planeGeo = new THREE.PlaneGeometry(3.2, 3.2);
-    const planeMat = new THREE.MeshBasicMaterial({
-      map: logoTexture,
-      transparent: true,
-      side: THREE.DoubleSide,
-      alphaTest: 0.05,
-    });
-    const logoPlane = new THREE.Mesh(planeGeo, planeMat);
-    scene.add(logoPlane);
 
     // --- Particles ---
     const positions = new Float32Array(PARTICLE_COUNT * 3);
@@ -113,17 +97,9 @@ const TarsierHero3D = () => {
       frameId = requestAnimationFrame(animate);
       t += 0.008;
 
-      // Gentle floating
-      logoPlane.position.y = Math.sin(t * 0.6) * 0.12;
-
-      // Very subtle tilt that follows mouse
+      // Mouse tilt for particles
       target.x += (mouse.x - target.x) * 0.04;
       target.y += (mouse.y - target.y) * 0.04;
-      logoPlane.rotation.y = target.x * 0.12;
-      logoPlane.rotation.x = -target.y * 0.08 - 0.05; // slight permanent downward tilt
-
-      // Slow gentle spin on Y axis
-      logoPlane.rotation.y += Math.sin(t * 0.3) * 0.008;
 
       // Particle drift
       const pos = particleGeo.attributes.position as THREE.BufferAttribute;
@@ -147,7 +123,7 @@ const TarsierHero3D = () => {
       }
       pos.needsUpdate = true;
 
-      // Particle group also follows cursor subtly
+      // Particle group follows cursor subtly
       particles.rotation.y = target.x * 0.12;
       particles.rotation.x = -target.y * 0.08;
 
@@ -169,9 +145,18 @@ const TarsierHero3D = () => {
   return (
     <div
       ref={mountRef}
-      className="w-full h-full max-h-[320px] lg:max-h-none"
+      className="w-full h-full max-h-[320px] lg:max-h-none relative"
       style={{ minHeight: '420px' }}
-    />
+    >
+      {/* Logo image — sits above canvas, below hero text z-stack */}
+      <img
+        src={tarsierLogoSrc}
+        alt="Tarsier"
+        className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+        style={{ zIndex: 1 }}
+        draggable={false}
+      />
+    </div>
   );
 };
 
