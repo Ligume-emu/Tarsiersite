@@ -111,7 +111,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
           if (!(mesh.material instanceof THREE.MeshBasicMaterial)) {
             mesh.material = new THREE.MeshBasicMaterial({
               map: videoTextureRef.current,
-              side: THREE.FrontSide,
+              side: THREE.DoubleSide,
               toneMapped: false,
             });
             mesh.material.needsUpdate = true;
