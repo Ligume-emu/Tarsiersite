@@ -4,7 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import clientVideo from '@/assets/cursorful-video-1773412428700.mp4';
-import iphoneModel from '@/assets/iphone_17_pro_max.glb?url';
+import iphoneModel from '@/assets/iphone_x.glb?url';
 
 function Starfield() {
   const stars = Array.from({ length: 140 }, (_, i) => ({
@@ -35,14 +35,57 @@ function Starfield() {
 
 type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: number; lastY: number };
 
-function IPhoneModel({ dragRef }: { dragRef: React.RefObject<DragState> }) {
+function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const { scene } = useGLTF(iphoneModel);
   const groupRef = useRef<THREE.Group>(null);
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
+  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
+  const sceneRef = useRef<THREE.Group | null>(null);
 
   useEffect(() => {
-    scene.rotation.y = Math.PI;
+    // Log ALL mesh names for debugging
+    const meshNames: string[] = [];
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        meshNames.push(child.name);
+      }
+    });
+    console.log('[WebShowcase] All mesh names in GLB:', meshNames);
+
+    const video = document.createElement('video');
+    video.src = clientVideo;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.setAttribute('playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('loop', '');
+    video.style.display = 'none';
+    document.body.appendChild(video);
+
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.format = THREE.RGBAFormat;
+    videoTexture.flipY = false;
+    videoTexture.colorSpace = THREE.SRGBColorSpace;
+    videoTexture.wrapS = THREE.ClampToEdgeWrapping;
+    videoTexture.wrapT = THREE.ClampToEdgeWrapping;
+    videoTextureRef.current = videoTexture;
+
+    sceneRef.current = scene as unknown as THREE.Group;
+
+    video.play().catch((err) => console.warn('[WebShowcase] Video autoplay failed:', err));
+
+    return () => {
+      video.pause();
+      document.body.removeChild(video);
+      videoTexture.dispose();
+      videoTextureRef.current = null;
+    };
   }, [scene]);
 
   useFrame((state) => {
@@ -53,6 +96,25 @@ function IPhoneModel({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     groupRef.current.rotation.y = currentRotY.current + Math.sin(state.clock.elapsedTime * 0.4) * 0.04;
     groupRef.current.rotation.x = currentRotX.current;
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.03;
+
+    // Re-apply screen material every frame — prevents R3F/GLB reconciler from overwriting it
+    if (sceneRef.current && videoTextureRef.current) {
+      sceneRef.current.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh && child.name === 'object.010_scr_0') {
+          if (!videoTextureRef.current) return;
+          const mesh = child as THREE.Mesh;
+          if (!(mesh.material instanceof THREE.MeshBasicMaterial)) {
+            mesh.material = new THREE.MeshBasicMaterial({
+              map: videoTextureRef.current,
+              side: THREE.DoubleSide,
+              toneMapped: false,
+            });
+            mesh.material.needsUpdate = true;
+          }
+          videoTextureRef.current.needsUpdate = true;
+        }
+      });
+    }
   });
 
   return (
@@ -73,7 +135,7 @@ function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
       <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
       <Suspense fallback={null}>
-        <IPhoneModel dragRef={dragRef} />
+        <IPhoneWithVideo dragRef={dragRef} />
       </Suspense>
     </>
   );
@@ -174,31 +236,6 @@ export default function WebShowcase() {
             >
               <SceneContent dragRef={dragRef} />
             </Canvas>
-          </div>
-
-          {/* HTML video overlay — positioned over the phone screen */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -54%)',
-              width: '38%',
-              aspectRatio: '9 / 19.5',
-              borderRadius: '28px',
-              overflow: 'hidden',
-              pointerEvents: 'none',
-              zIndex: 5,
-            }}
-          >
-            <video
-              src={clientVideo}
-              autoPlay
-              muted
-              loop
-              playsInline
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
           </div>
 
           {/* Ambient glow */}
