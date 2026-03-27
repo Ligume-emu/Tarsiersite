@@ -73,9 +73,9 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     videoTexture.format = THREE.RGBAFormat;
     videoTexture.flipY = false;
     videoTexture.colorSpace = THREE.SRGBColorSpace;
-    videoTexture.repeat.set(1, 1);
+    videoTexture.repeat.set(1, -1);
     videoTexture.offset.set(0, 0);
-    videoTexture.rotation = 0;
+    videoTexture.rotation = Math.PI / 2;
     videoTexture.center.set(0.5, 0.5);
     videoTexture.wrapS = THREE.ClampToEdgeWrapping;
     videoTexture.wrapT = THREE.ClampToEdgeWrapping;
