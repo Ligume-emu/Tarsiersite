@@ -106,6 +106,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     if (sceneRef.current && videoTextureRef.current) {
       sceneRef.current.traverse((child) => {
         if ((child as THREE.Mesh).isMesh && child.name === 'Cube010_screen001_0') {
+          if (!videoTextureRef.current) return
           const mesh = child as THREE.Mesh;
           if (!(mesh.material instanceof THREE.MeshBasicMaterial)) {
             mesh.material = new THREE.MeshBasicMaterial({
