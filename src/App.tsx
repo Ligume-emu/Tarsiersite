@@ -24,7 +24,7 @@ function App() {
   const handleIntroComplete = () => {
     setIntroComplete(true);
     document.body.style.overflow = '';
-    initSmoothScroll();
+    if (!isHome) initSmoothScroll();
   };
 
   return (

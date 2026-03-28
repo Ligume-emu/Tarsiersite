@@ -10,7 +10,7 @@ import TarsierNav from '@/components/TarsierNav';
 import ScrollEyes from '@/components/ScrollEyes';
 
 const HomePage = () => (
-  <div className="min-h-screen bg-bg-warm">
+  <div className="snap-container bg-bg-warm">
     <TarsierNav />
     <ScrollEyes />
     <HeroSection />

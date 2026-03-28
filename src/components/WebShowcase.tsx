@@ -4,7 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import clientVideo from '@/assets/cursorful-video-1773412428700.mp4';
-import iphoneModel from '@/assets/iphone_x.glb?url';
+const iphoneModel = '/models/IPHONE17.glb';
 
 function Starfield() {
   const stars = Array.from({ length: 140 }, (_, i) => ({
