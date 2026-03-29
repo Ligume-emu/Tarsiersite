@@ -71,6 +71,12 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
       textureRef.current = texture;
       canvasCtxRef.current = ctx;
 
+      // Draw red rect immediately to confirm canvas pipeline reaches the material
+      ctx.fillStyle = '#ff0000';
+      ctx.fillRect(0, 0, 1080, 1920);
+      texture.needsUpdate = true;
+      console.log('Canvas ctx set, drew red test rect');
+
       scene.traverse((child) => {
         const mesh = child as THREE.Mesh;
         if (!mesh.isMesh) return;
@@ -158,7 +164,9 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
 
     // Draw video frames onto canvas each frame
-    if (canvasCtxRef.current && videoRef.current && !videoRef.current.paused) {
+    if (!canvasCtxRef.current) return;
+    console.log('useFrame drawing, video paused:', videoRef.current?.paused);
+    if (canvasCtxRef.current && videoRef.current) {
       canvasCtxRef.current.drawImage(videoRef.current, 0, 0, 1080, 1920);
       if (textureRef.current) textureRef.current.needsUpdate = true;
     }
