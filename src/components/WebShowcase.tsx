@@ -3,7 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import clientVideo from '@/assets/cursorful-video-1773412428700.mp4';
+import clientVideo from '@/assets/NPSSITE.mov';
 const iphoneModel = '/models/IPHONE17.glb';
 
 // Ready for VideoTexture application — do not use until mesh name confirmed from console
@@ -64,6 +64,9 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.colorSpace = THREE.SRGBColorSpace;
+        texture.flipY = false;
+        texture.repeat.set(1, 1);
+        texture.offset.set(0, 0);
         textureRef.current = texture;
 
         mesh.material = new THREE.MeshBasicMaterial({
