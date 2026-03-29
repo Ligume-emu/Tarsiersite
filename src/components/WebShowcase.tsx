@@ -48,7 +48,6 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
 
   useEffect(() => {
     const video = document.createElement('video');
-    video.crossOrigin = 'anonymous';
     video.loop = true;
     video.muted = true;
     video.playsInline = true;
