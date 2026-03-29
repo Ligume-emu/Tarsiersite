@@ -1,13 +1,10 @@
-import { useRef, useEffect, Suspense } from 'react';
+import { useRef, Suspense } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import clientVideo from '@/assets/cursorful-video-1773412428700.mp4';
 const iphoneModel = '/models/IPHONE17.glb';
-
-// Ready for VideoTexture application — do not use until mesh name confirmed from console
-const videoSrc = clientVideo;
 
 function Starfield() {
   const stars = Array.from({ length: 140 }, (_, i) => ({
@@ -38,124 +35,28 @@ function Starfield() {
 
 type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: number; lastY: number };
 
-function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragState>; videoRef: React.RefObject<HTMLVideoElement | null> }) {
+function IPhone({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const { scene } = useGLTF(iphoneModel);
   const groupRef = useRef<THREE.Group>(null);
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
 
-  const textureRef = useRef<THREE.CanvasTexture | null>(null);
-  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
-  const screenMaterialRef = useRef<THREE.MeshBasicMaterial | null>(null);
-
-  useEffect(() => {
-    const video = document.createElement('video');
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-    video.setAttribute('playsinline', '');
-    video.style.display = 'none';
-    video.src = videoSrc;
-    document.body.appendChild(video);
-    videoRef.current = video;
-
-    const onReady = () => {
-      // Offscreen canvas — bypasses UV/WebGL video sampling issues
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1920;
-      const ctx = canvas.getContext('2d')!;
-
-      canvasCtxRef.current = ctx;
-
-      scene.traverse((child) => {
-        const mesh = child as THREE.Mesh;
-        if (!mesh.isMesh) return;
-
-        // Hide screen placeholder content meshes (emissive white = glowing screen elements)
-        const mat = mesh.material as THREE.MeshStandardMaterial;
-        if (mat?.emissive?.getHex() === 0xffffff && mesh.name !== 'lAVJNLotEOnEKjC001') {
-          mesh.visible = false;
-          console.log('Hidden placeholder mesh:', mesh.name);
-        }
-
-        if (mesh.name === 'lAVJNLotEOnEKjC001') {
-          const newMat = new THREE.MeshBasicMaterial({
-            toneMapped: false,
-            side: THREE.DoubleSide,
-          });
-          mesh.material = newMat;
-          mesh.renderOrder = 0;
-          screenMaterialRef.current = newMat;
-
-          const screenCanvas = document.createElement('canvas');
-          screenCanvas.width = 1080;
-          screenCanvas.height = 1920;
-          canvasCtxRef.current = screenCanvas.getContext('2d');
-
-          const tex = new THREE.CanvasTexture(screenCanvas);
-          tex.minFilter = THREE.LinearFilter;
-          tex.magFilter = THREE.LinearFilter;
-          newMat.map = tex;
-          newMat.needsUpdate = true;
-          textureRef.current = tex;
-          console.log('Canvas + texture created and assigned immediately');
-        }
-      });
-
-      video.play().then(() => {
-        console.log('Video playing, readyState:', video.readyState);
-      }).catch((err) => console.error('Play failed:', err));
-    };
-
-    video.addEventListener('canplaythrough', onReady, { once: true });
-
-    video.play().catch((err) => {
-      console.error('Autoplay blocked:', err.message);
-      const playOnInteraction = () => {
-        video.play();
-        window.removeEventListener('pointerdown', playOnInteraction);
-      };
-      window.addEventListener('pointerdown', playOnInteraction);
-    });
-
-    return () => {
-      video.pause();
-      document.body.removeChild(video);
-      textureRef.current?.dispose();
-      videoRef.current = null;
-      textureRef.current = null;
-      canvasCtxRef.current = null;
-    };
-  }, [scene]);
-
-  // Fix 3 — Idle animation + cursor LERP
   useFrame((state) => {
     if (!groupRef.current) return;
     const drag = dragRef.current;
 
-    // Slow idle rotation only when cursor is not actively driving the model
     if (Math.abs(drag.rotY - currentRotY.current) < 0.01) {
       drag.rotY += 0.003;
     }
 
-    // Cursor LERP — unchanged
     currentRotY.current += (drag.rotY - currentRotY.current) * 0.1;
     currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
     groupRef.current.rotation.y = currentRotY.current;
     groupRef.current.rotation.x = currentRotX.current;
 
-    // Gentle float
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
-
-    // Draw video frames onto canvas each frame
-    if (canvasCtxRef.current && videoRef.current && textureRef.current) {
-      canvasCtxRef.current.drawImage(videoRef.current, 0, 0, 1080, 1920);
-      textureRef.current.needsUpdate = true;
-    }
   });
 
-  // Fix 2 — Scale 8, commanding presence
   return (
     <primitive
       ref={groupRef}
@@ -167,7 +68,7 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
   );
 }
 
-function SceneContent({ dragRef, videoRef }: { dragRef: React.RefObject<DragState>; videoRef: React.RefObject<HTMLVideoElement | null> }) {
+function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   return (
     <>
       <ambientLight intensity={0.35} />
@@ -175,7 +76,7 @@ function SceneContent({ dragRef, videoRef }: { dragRef: React.RefObject<DragStat
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
       <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
       <Suspense fallback={null}>
-        <IPhoneWithVideo dragRef={dragRef} videoRef={videoRef} />
+        <IPhone dragRef={dragRef} />
       </Suspense>
     </>
   );
@@ -185,16 +86,15 @@ export default function WebShowcase() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: false, amount: 0.3 });
   const dragRef = useRef<DragState>({ rotX: -0.12, rotY: 0.15, isDragging: false, lastX: 0, lastY: 0 });
-  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerDown(e: React.PointerEvent<HTMLElement>) {
     dragRef.current.isDragging = true;
     dragRef.current.lastX = e.clientX;
     dragRef.current.lastY = e.clientY;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
 
-  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerMove(e: React.PointerEvent<HTMLElement>) {
     if (!dragRef.current.isDragging) return;
     const dx = e.clientX - dragRef.current.lastX;
     const dy = e.clientY - dragRef.current.lastY;
@@ -209,7 +109,6 @@ export default function WebShowcase() {
     dragRef.current.isDragging = false;
   }
 
-  // Fix 1 — Full-bleed canvas; text floats over at z-10
   return (
     <section
       ref={sectionRef}
@@ -219,13 +118,8 @@ export default function WebShowcase() {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
-      onClick={() => {
-        if (videoRef.current?.paused) {
-          videoRef.current.play().then(() => console.log('Manual play triggered'));
-        }
-      }}
     >
-      {/* ── Full-bleed 3D canvas — position: absolute, inset: 0 ── */}
+      {/* ── Full-bleed 3D canvas ── */}
       <div className="absolute inset-0">
         <Starfield />
         <Canvas
@@ -233,7 +127,7 @@ export default function WebShowcase() {
           camera={{ position: [0, 0, 2.5], fov: 38 }}
           gl={{ antialias: true, alpha: true }}
         >
-          <SceneContent dragRef={dragRef} videoRef={videoRef} />
+          <SceneContent dragRef={dragRef} />
         </Canvas>
         {/* Ambient glow */}
         <div
@@ -246,6 +140,28 @@ export default function WebShowcase() {
           }}
         />
       </div>
+
+      {/* ── CSS video overlay — sits between canvas (z0) and text (z10) ── */}
+      <video
+        src={clientVideo}
+        autoPlay
+        muted
+        loop
+        playsInline
+        style={{
+          position: 'absolute',
+          top: '18%',
+          left: '50%',
+          transform: 'translateX(-20%)',
+          width: '28%',
+          height: '58%',
+          objectFit: 'cover',
+          borderRadius: '12px',
+          zIndex: 5,
+          pointerEvents: 'none',
+          opacity: 0.95,
+        }}
+      />
 
       {/* ── Text overlay — relative z-10, pointer-events-none ── */}
       <div
