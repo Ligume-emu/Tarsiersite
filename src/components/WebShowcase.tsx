@@ -44,43 +44,57 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
 
-  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const textureRef = useRef<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
-    console.log('videoSrc:', videoSrc);
-
     const video = document.createElement('video');
     video.src = videoSrc;
-    video.autoplay = true;
+    video.crossOrigin = 'anonymous';
     video.muted = true;
     video.loop = true;
     video.playsInline = true;
     video.style.display = 'none';
-    // Append BEFORE play — prevents autoplay block on detached elements
     document.body.appendChild(video);
-    video.play().catch((e) => console.warn('[WebShowcase] autoplay blocked:', e));
+    videoRef.current = video;
 
-    const videoTexture = new THREE.VideoTexture(video);
-    videoTexture.minFilter = THREE.LinearFilter;
-    videoTexture.magFilter = THREE.LinearFilter;
-    videoTexture.format = THREE.RGBAFormat;
-    videoTexture.flipY = true; // flipped — some models need true to show correct orientation
-    videoTextureRef.current = videoTexture;
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBFormat;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.flipY = false;
+    textureRef.current = texture;
 
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (mesh.isMesh && mesh.name === 'aAftszMZbNEMhoe001') {
-        const mat = new THREE.MeshBasicMaterial({ map: videoTexture, toneMapped: false });
+        console.log('Applied texture to:', child.name);
+        const mat = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
         mat.needsUpdate = true;
         mesh.material = mat;
       }
     });
 
+    // Delayed play — avoids autoplay block on some browsers
+    const timer = setTimeout(() => {
+      video.play().catch(() => {
+        // Fallback: play on first user interaction
+        const onPointerDown = () => {
+          video.play().catch(() => {});
+          window.removeEventListener('pointerdown', onPointerDown);
+        };
+        window.addEventListener('pointerdown', onPointerDown);
+      });
+    }, 500);
+
     return () => {
+      clearTimeout(timer);
       video.pause();
       document.body.removeChild(video);
-      videoTexture.dispose();
-      videoTextureRef.current = null;
+      texture.dispose();
+      videoRef.current = null;
+      textureRef.current = null;
     };
   }, [scene]);
 
@@ -103,8 +117,10 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     // Gentle float
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
 
-    // Advance video texture each frame
-    if (videoTextureRef.current) videoTextureRef.current.needsUpdate = true;
+    // Advance video texture each frame only when playing
+    if (textureRef.current && videoRef.current && !videoRef.current.paused) {
+      textureRef.current.needsUpdate = true;
+    }
   });
 
   // Fix 2 — Scale 8, commanding presence
@@ -112,7 +128,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     <primitive
       ref={groupRef}
       object={scene}
-      scale={9.5}
+      scale={8.5}
       position={[0, 0, 0]}
     />
   );
