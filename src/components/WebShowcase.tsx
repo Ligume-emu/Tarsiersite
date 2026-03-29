@@ -70,14 +70,24 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
 
       scene.traverse((child) => {
         const mesh = child as THREE.Mesh;
-        if (mesh.isMesh && mesh.name === 'lAVJNLotEOnEKjC001') {
+        if (!mesh.isMesh) return;
+
+        // Hide screen placeholder content meshes (emissive white = glowing screen elements)
+        const mat = mesh.material as THREE.MeshStandardMaterial;
+        if (mat?.emissive?.getHex() === 0xffffff && mesh.name !== 'lAVJNLotEOnEKjC001') {
+          mesh.visible = false;
+          console.log('Hidden placeholder mesh:', mesh.name);
+        }
+
+        // Apply video to screen backing
+        if (mesh.name === 'lAVJNLotEOnEKjC001') {
           mesh.material = new THREE.MeshBasicMaterial({
             map: texture,
             toneMapped: false,
             side: THREE.FrontSide,
           });
           (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
-          console.log('Screen texture applied to lAVJNLotEOnEKjC001');
+          console.log('Video texture applied');
         }
       });
     };
