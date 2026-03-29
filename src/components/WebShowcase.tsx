@@ -108,12 +108,22 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
             console.log('Generated UVs from position bounds');
           }
 
+          const uv = mesh.geometry.attributes.uv;
+          if (uv) {
+            console.log('UV sample 0:', uv.getX(0), uv.getY(0));
+            console.log('UV sample 20:', uv.getX(20), uv.getY(20));
+            console.log('UV sample 40:', uv.getX(40), uv.getY(40));
+          }
+
           mesh.material = new THREE.MeshBasicMaterial({
             map: texture,
             toneMapped: false,
             side: THREE.DoubleSide,
+            depthTest: false,
+            depthWrite: false,
           });
           (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
+          mesh.renderOrder = 999;
           console.log('Canvas texture applied');
         }
       });
@@ -165,7 +175,6 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
 
     // Draw video frames onto canvas each frame
     if (!canvasCtxRef.current) return;
-    console.log('useFrame drawing, video paused:', videoRef.current?.paused);
     if (canvasCtxRef.current && videoRef.current) {
       canvasCtxRef.current.drawImage(videoRef.current, 0, 0, 1080, 1920);
       if (textureRef.current) textureRef.current.needsUpdate = true;
