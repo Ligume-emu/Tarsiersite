@@ -83,6 +83,25 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
         }
 
         if (mesh.name === 'lAVJNLotEOnEKjC001') {
+          const uvs = mesh.geometry.attributes.uv;
+          console.log('UV attribute:', uvs ? `exists, count: ${uvs.count}` : 'MISSING - no UVs');
+
+          if (!uvs) {
+            // Generate flat UVs from position data
+            const pos = mesh.geometry.attributes.position;
+            const uvArray = new Float32Array(pos.count * 2);
+            const box = new THREE.Box3().setFromBufferAttribute(pos as THREE.BufferAttribute);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+
+            for (let i = 0; i < pos.count; i++) {
+              uvArray[i * 2]     = (pos.getX(i) - box.min.x) / size.x;
+              uvArray[i * 2 + 1] = (pos.getY(i) - box.min.y) / size.y;
+            }
+            mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uvArray, 2));
+            console.log('Generated UVs from position bounds');
+          }
+
           mesh.material = new THREE.MeshBasicMaterial({
             map: texture,
             toneMapped: false,
