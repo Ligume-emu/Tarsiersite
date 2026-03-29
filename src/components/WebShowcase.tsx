@@ -82,12 +82,24 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
         if (mesh.name === 'lAVJNLotEOnEKjC001') {
           const newMat = new THREE.MeshBasicMaterial({
             toneMapped: false,
-            side: THREE.FrontSide,
+            side: THREE.DoubleSide,
           });
           mesh.material = newMat;
           mesh.renderOrder = 0;
           screenMaterialRef.current = newMat;
-          console.log('Material assigned, ref stored');
+
+          const screenCanvas = document.createElement('canvas');
+          screenCanvas.width = 1080;
+          screenCanvas.height = 1920;
+          canvasCtxRef.current = screenCanvas.getContext('2d');
+
+          const tex = new THREE.CanvasTexture(screenCanvas);
+          tex.minFilter = THREE.LinearFilter;
+          tex.magFilter = THREE.LinearFilter;
+          newMat.map = tex;
+          newMat.needsUpdate = true;
+          textureRef.current = tex;
+          console.log('Canvas + texture created and assigned immediately');
         }
       });
 
@@ -136,24 +148,10 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
     // Gentle float
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
 
-    // Draw video frames onto canvas each frame + update material map
-    const ctx = canvasCtxRef.current;
-    const vid = videoRef.current;
-    if (ctx && vid && screenMaterialRef.current) {
-      ctx.save();
-      ctx.scale(-1, 1);
-      ctx.drawImage(vid, -1080, 0, 1080, 1920);
-      ctx.restore();
-
-      if (!screenMaterialRef.current.map) {
-        const tex = new THREE.CanvasTexture(ctx.canvas);
-        tex.minFilter = THREE.LinearFilter;
-        tex.magFilter = THREE.LinearFilter;
-        screenMaterialRef.current.map = tex;
-        screenMaterialRef.current.needsUpdate = true;
-      } else {
-        screenMaterialRef.current.map.needsUpdate = true;
-      }
+    // Draw video frames onto canvas each frame
+    if (canvasCtxRef.current && videoRef.current && textureRef.current) {
+      canvasCtxRef.current.drawImage(videoRef.current, 0, 0, 1080, 1920);
+      textureRef.current.needsUpdate = true;
     }
   });
 
