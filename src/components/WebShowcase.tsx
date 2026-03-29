@@ -147,7 +147,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
       object={scene}
       scale={8.5}
       position={[0, 0, 0]}
-      rotation={[0, Math.PI, 0]}
+      rotation={[0, 0, 0]}
     />
   );
 }
