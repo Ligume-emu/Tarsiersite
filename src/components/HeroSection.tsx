@@ -51,6 +51,7 @@ const HeroSection = () => {
   return (
     <section
       ref={sectionRef}
+      data-section="hero"
       className="relative bg-bg-warm flex flex-col justify-center overflow-hidden"
     >
       {/* Subtle warm radial gradient */}

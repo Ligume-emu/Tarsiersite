@@ -4,9 +4,11 @@ import tarsierLogo from "@/assets/tarsier-logo.png";
 
 const TarsierNav = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [onHero, setOnHero] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Snap container scroll → scrolled state
   useEffect(() => {
     const container = document.querySelector('.snap-container') as HTMLElement | null;
     const target: HTMLElement | Window = container ?? window;
@@ -16,19 +18,35 @@ const TarsierNav = () => {
     return () => target.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Hero section visibility → dark pill when hero is showing (cream bg)
+  useEffect(() => {
+    const hero = document.querySelector('[data-section="hero"]') as HTMLElement | null;
+    if (!hero) return;
+    const container = document.querySelector('.snap-container') as HTMLElement | null;
+    const observer = new IntersectionObserver(
+      ([entry]) => setOnHero(entry.isIntersecting),
+      { root: container, threshold: 0.5 }
+    );
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
+
   const links = [
     { href: '/services', label: 'Services' },
     { href: '/#contact', label: 'Contact' },
   ];
 
-  const pillBg = scrolled
-    ? 'rgba(20,16,14,0.7)'
+  // onHero: cream background — force dark pill so it's always legible
+  // scrolled: user has scrolled past first snap point
+  // otherwise: base glass state
+  const pillBg = onHero || scrolled
+    ? 'rgba(20,16,14,0.75)'
     : hovered
     ? 'rgba(255,255,255,0.10)'
     : 'rgba(255,255,255,0.06)';
 
-  const pillBorder = scrolled
-    ? 'rgba(180,102,68,0.2)'
+  const pillBorder = onHero || scrolled
+    ? 'rgba(180,102,68,0.25)'
     : hovered
     ? 'rgba(255,255,255,0.2)'
     : 'rgba(255,255,255,0.12)';

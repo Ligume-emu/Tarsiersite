@@ -47,6 +47,8 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
+    console.log('videoSrc:', videoSrc);
+
     const video = document.createElement('video');
     video.src = videoSrc;
     video.autoplay = true;
@@ -54,21 +56,23 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     video.loop = true;
     video.playsInline = true;
     video.style.display = 'none';
+    // Append BEFORE play — prevents autoplay block on detached elements
     document.body.appendChild(video);
-    video.play().catch(() => {});
+    video.play().catch((e) => console.warn('[WebShowcase] autoplay blocked:', e));
 
     const videoTexture = new THREE.VideoTexture(video);
     videoTexture.minFilter = THREE.LinearFilter;
     videoTexture.magFilter = THREE.LinearFilter;
     videoTexture.format = THREE.RGBAFormat;
-    videoTexture.flipY = false;
+    videoTexture.flipY = true; // flipped — some models need true to show correct orientation
     videoTextureRef.current = videoTexture;
 
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (mesh.isMesh && mesh.name === 'aAftszMZbNEMhoe001') {
-        mesh.material = new THREE.MeshBasicMaterial({ map: videoTexture });
-        (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
+        const mat = new THREE.MeshBasicMaterial({ map: videoTexture, toneMapped: false });
+        mat.needsUpdate = true;
+        mesh.material = mat;
       }
     });
 
@@ -108,7 +112,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     <primitive
       ref={groupRef}
       object={scene}
-      scale={8}
+      scale={9.5}
       position={[0, 0, 0]}
     />
   );
@@ -171,7 +175,7 @@ export default function WebShowcase() {
         <Starfield />
         <Canvas
           style={{ width: '100%', height: '100%' }}
-          camera={{ position: [0, 0, 2.8], fov: 40 }}
+          camera={{ position: [0, 0, 2.5], fov: 38 }}
           gl={{ antialias: true, alpha: true }}
         >
           <SceneContent dragRef={dragRef} />
