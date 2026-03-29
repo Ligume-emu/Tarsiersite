@@ -6,6 +6,9 @@ import * as THREE from 'three';
 import clientVideo from '@/assets/cursorful-video-1773412428700.mp4';
 const iphoneModel = '/models/IPHONE17.glb';
 
+// Ready for VideoTexture application — do not use until mesh name confirmed from console
+const videoSrc = clientVideo;
+
 function Starfield() {
   const stars = Array.from({ length: 140 }, (_, i) => ({
     id: i,
@@ -40,88 +43,45 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const groupRef = useRef<THREE.Group>(null);
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
-  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
-  const sceneRef = useRef<THREE.Group | null>(null);
 
+  // Fix 2 — Log all mesh names for screen mesh identification
   useEffect(() => {
-    // Log ALL mesh names for debugging
-    const meshNames: string[] = [];
     scene.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        meshNames.push(child.name);
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+        console.log('MESH:', mesh.name, '| material:', (mesh.material as THREE.Material)?.name);
       }
     });
-    console.log('[WebShowcase] All mesh names in GLB:', meshNames);
-
-    const video = document.createElement('video');
-    video.src = clientVideo;
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-    video.autoplay = true;
-    video.setAttribute('playsinline', '');
-    video.setAttribute('muted', '');
-    video.setAttribute('autoplay', '');
-    video.setAttribute('loop', '');
-    video.style.display = 'none';
-    document.body.appendChild(video);
-
-    const videoTexture = new THREE.VideoTexture(video);
-    videoTexture.minFilter = THREE.LinearFilter;
-    videoTexture.magFilter = THREE.LinearFilter;
-    videoTexture.format = THREE.RGBAFormat;
-    videoTexture.flipY = false;
-    videoTexture.colorSpace = THREE.SRGBColorSpace;
-    videoTexture.wrapS = THREE.ClampToEdgeWrapping;
-    videoTexture.wrapT = THREE.ClampToEdgeWrapping;
-    videoTextureRef.current = videoTexture;
-
-    sceneRef.current = scene as unknown as THREE.Group;
-
-    video.play().catch((err) => console.warn('[WebShowcase] Video autoplay failed:', err));
-
-    return () => {
-      video.pause();
-      document.body.removeChild(video);
-      videoTexture.dispose();
-      videoTextureRef.current = null;
-    };
+    // TODO: apply VideoTexture to [MESH NAME] after confirmation
+    // videoSrc is ready: see const videoSrc above
   }, [scene]);
 
+  // Fix 3 — Idle animation + cursor LERP
   useFrame((state) => {
     if (!groupRef.current) return;
     const drag = dragRef.current;
+
+    // Slow idle rotation only when cursor is not actively driving the model
+    if (Math.abs(drag.rotY - currentRotY.current) < 0.01) {
+      drag.rotY += 0.003;
+    }
+
+    // Cursor LERP — unchanged
     currentRotY.current += (drag.rotY - currentRotY.current) * 0.1;
     currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
-    groupRef.current.rotation.y = currentRotY.current + Math.sin(state.clock.elapsedTime * 0.4) * 0.04;
+    groupRef.current.rotation.y = currentRotY.current;
     groupRef.current.rotation.x = currentRotX.current;
-    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.03;
 
-    // Re-apply screen material every frame — prevents R3F/GLB reconciler from overwriting it
-    if (sceneRef.current && videoTextureRef.current) {
-      sceneRef.current.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh && child.name === 'object.010_scr_0') {
-          if (!videoTextureRef.current) return;
-          const mesh = child as THREE.Mesh;
-          if (!(mesh.material instanceof THREE.MeshBasicMaterial)) {
-            mesh.material = new THREE.MeshBasicMaterial({
-              map: videoTextureRef.current,
-              side: THREE.DoubleSide,
-              toneMapped: false,
-            });
-            mesh.material.needsUpdate = true;
-          }
-          videoTextureRef.current.needsUpdate = true;
-        }
-      });
-    }
+    // Gentle float
+    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
   });
 
+  // Fix 1 — Scale 5, centered
   return (
     <primitive
       ref={groupRef}
       object={scene}
-      scale={1.8}
+      scale={5}
       position={[0, 0, 0]}
     />
   );
@@ -231,7 +191,7 @@ export default function WebShowcase() {
           <div className="absolute inset-0" style={{ paddingTop: '36px' }}>
             <Canvas
               style={{ width: '100%', height: '100%' }}
-              camera={{ position: [0, 0.2, 4.2], fov: 45 }}
+              camera={{ position: [0, 0, 3.5], fov: 45 }}
               gl={{ antialias: true, alpha: true }}
             >
               <SceneContent dragRef={dragRef} />
