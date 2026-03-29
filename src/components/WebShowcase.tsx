@@ -44,7 +44,8 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
 
-  const textureRef = useRef<THREE.VideoTexture | null>(null);
+  const textureRef = useRef<THREE.CanvasTexture | null>(null);
+  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
 
   useEffect(() => {
     const video = document.createElement('video');
@@ -57,15 +58,18 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
     document.body.appendChild(video);
     videoRef.current = video;
 
-    // Only create and apply texture once the video has actual frame data
     const onReady = () => {
-      const texture = new THREE.VideoTexture(video);
+      // Offscreen canvas — bypasses UV/WebGL video sampling issues
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext('2d')!;
+
+      const texture = new THREE.CanvasTexture(canvas);
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
-      texture.format = THREE.RGBFormat;
-      texture.flipY = false;
-      texture.colorSpace = THREE.SRGBColorSpace;
       textureRef.current = texture;
+      canvasCtxRef.current = ctx;
 
       scene.traverse((child) => {
         const mesh = child as THREE.Mesh;
@@ -78,28 +82,25 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
           console.log('Hidden placeholder mesh:', mesh.name);
         }
 
-        // Apply video to screen backing
         if (mesh.name === 'lAVJNLotEOnEKjC001') {
           mesh.material = new THREE.MeshBasicMaterial({
             map: texture,
             toneMapped: false,
-            side: THREE.FrontSide,
+            side: THREE.DoubleSide,
           });
           (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
-          console.log('Video texture applied');
+          console.log('Canvas texture applied');
         }
       });
+
+      video.play().then(() => {
+        console.log('Video playing, readyState:', video.readyState);
+      }).catch((err) => console.error('Play failed:', err));
     };
 
-    // loadeddata fires when first frame is available
     video.addEventListener('canplaythrough', onReady, { once: true });
 
-    video.play().then(() => {
-      console.log('Video playing:', !video.paused);
-      console.log('Video readyState:', video.readyState);
-      console.log('Video src resolved:', video.currentSrc);
-      console.log('Video duration:', video.duration);
-    }).catch((err) => {
+    video.play().catch((err) => {
       console.error('Autoplay blocked:', err.message);
       const playOnInteraction = () => {
         video.play();
@@ -114,6 +115,7 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
       textureRef.current?.dispose();
       videoRef.current = null;
       textureRef.current = null;
+      canvasCtxRef.current = null;
     };
   }, [scene]);
 
@@ -136,9 +138,10 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
     // Gentle float
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
 
-    // Advance video texture each frame
-    if (textureRef.current) {
-      textureRef.current.needsUpdate = true;
+    // Draw video frames onto canvas each frame
+    if (canvasCtxRef.current && videoRef.current && !videoRef.current.paused) {
+      canvasCtxRef.current.drawImage(videoRef.current, 0, 0, 1080, 1920);
+      if (textureRef.current) textureRef.current.needsUpdate = true;
     }
   });
 
