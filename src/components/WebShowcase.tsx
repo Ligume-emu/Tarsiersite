@@ -44,12 +44,21 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
 
-  // Fix 2 — Log all mesh names for screen mesh identification
+  // Fix 3 — Log mesh material properties to identify screen mesh
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
-        console.log('MESH:', mesh.name, '| material:', (mesh.material as THREE.Material)?.name);
+        const m = mesh.material as THREE.MeshStandardMaterial;
+        console.log(
+          'MESH:', mesh.name,
+          '| color:', m.color?.getHexString(),
+          '| roughness:', m.roughness,
+          '| metalness:', m.metalness,
+          '| opacity:', m.opacity,
+          '| transparent:', m.transparent,
+          '| emissive:', m.emissive?.getHexString(),
+        );
       }
     });
     // TODO: apply VideoTexture to [MESH NAME] after confirmation
@@ -76,12 +85,12 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
   });
 
-  // Fix 1 — Scale 5, centered
+  // Fix 2 — Scale 8, commanding presence
   return (
     <primitive
       ref={groupRef}
       object={scene}
-      scale={5}
+      scale={8}
       position={[0, 0, 0]}
     />
   );
@@ -110,7 +119,7 @@ export default function WebShowcase() {
     dragRef.current.isDragging = true;
     dragRef.current.lastX = e.clientX;
     dragRef.current.lastY = e.clientY;
-    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
@@ -128,94 +137,76 @@ export default function WebShowcase() {
     dragRef.current.isDragging = false;
   }
 
+  // Fix 1 — Full-bleed canvas; text floats over at z-10
   return (
     <section
       ref={sectionRef}
-      className="bg-[#0A0806] py-6 px-6 md:px-10 flex flex-col justify-center"
+      className="relative overflow-hidden bg-[#0A0806]"
+      style={{ cursor: 'grab' }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
     >
-      <div className="max-w-6xl mx-auto w-full">
-        {/* Label */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="font-mono text-xs tracking-[0.2em] uppercase text-[#B85C2A] mb-6"
+      {/* ── Full-bleed 3D canvas — position: absolute, inset: 0 ── */}
+      <div className="absolute inset-0">
+        <Starfield />
+        <Canvas
+          style={{ width: '100%', height: '100%' }}
+          camera={{ position: [0, 0, 2.8], fov: 40 }}
+          gl={{ antialias: true, alpha: true }}
         >
-          What We Build
-        </motion.p>
-
-        {/* Heading */}
-        <motion.h2
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-6 leading-[1.05]"
+          <SceneContent dragRef={dragRef} />
+        </Canvas>
+        {/* Ambient glow */}
+        <div
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none"
           style={{
-            fontFamily: 'Cormorant Garamond, serif',
-            fontSize: 'clamp(2rem, 5vw, 4rem)',
-            color: '#F7F4F1',
+            width: '600px',
+            height: '200px',
+            background: 'radial-gradient(ellipse, rgba(184,92,42,0.15) 0%, transparent 70%)',
+            filter: 'blur(32px)',
           }}
-        >
-          Websites that carry<br />the weight of a brand.
-        </motion.h2>
+        />
+      </div>
 
-        {/* 3D Stage */}
-        <motion.div
-          initial={{ opacity: 0, y: 48 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="relative rounded-2xl overflow-hidden border border-white/10"
-          style={{ height: 'clamp(300px, calc(100vh - 260px), 520px)', background: '#060504', cursor: 'grab' }}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-        >
-          <Starfield />
+      {/* ── Text overlay — relative z-10, pointer-events-none ── */}
+      <div
+        className="relative z-10 pointer-events-none flex flex-col justify-between px-8 md:px-14 py-12"
+        style={{ height: '100%' }}
+      >
+        {/* Top: label + heading */}
+        <div>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="font-mono text-xs tracking-[0.2em] uppercase text-[#B85C2A] mb-4"
+          >
+            What We Build
+          </motion.p>
 
-          {/* Browser chrome */}
-          <div className="absolute top-0 left-0 right-0 bg-[#111]/80 backdrop-blur-sm px-4 py-2.5 flex items-center gap-2 border-b border-white/10 z-10">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
-              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
-              <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
-            </div>
-            <div className="flex-1 mx-3">
-              <div className="bg-white/10 rounded px-3 py-0.5 text-xs text-white/40 font-mono max-w-[200px]">
-                client-site.com
-              </div>
-            </div>
-          </div>
-
-          {/* R3F Canvas */}
-          <div className="absolute inset-0" style={{ paddingTop: '36px' }}>
-            <Canvas
-              style={{ width: '100%', height: '100%' }}
-              camera={{ position: [0, 0, 3.5], fov: 45 }}
-              gl={{ antialias: true, alpha: true }}
-            >
-              <SceneContent dragRef={dragRef} />
-            </Canvas>
-          </div>
-
-          {/* Ambient glow */}
-          <div
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none"
+          <motion.h2
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="leading-[1.05]"
             style={{
-              width: '400px',
-              height: '150px',
-              background: 'radial-gradient(ellipse, rgba(184,92,42,0.12) 0%, transparent 70%)',
-              filter: 'blur(24px)',
+              fontFamily: 'Cormorant Garamond, serif',
+              fontSize: 'clamp(2rem, 5vw, 4rem)',
+              color: '#F7F4F1',
             }}
-          />
-        </motion.div>
+          >
+            Websites that carry<br />the weight of a brand.
+          </motion.h2>
+        </div>
 
-        {/* Meta row */}
+        {/* Bottom: meta row */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="mt-6 flex flex-wrap items-center justify-between gap-4"
+          transition={{ duration: 0.7, delay: 0.5 }}
+          className="flex flex-wrap items-end justify-between gap-4"
         >
           <div>
             <p className="text-white/40 text-xs font-mono mb-1">Client Work — 2025</p>
