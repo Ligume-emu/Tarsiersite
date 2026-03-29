@@ -46,6 +46,7 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
 
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
   const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const screenMaterialRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
   useEffect(() => {
     const video = document.createElement('video');
@@ -65,17 +66,7 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
       canvas.height = 1920;
       const ctx = canvas.getContext('2d')!;
 
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.minFilter = THREE.LinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      textureRef.current = texture;
       canvasCtxRef.current = ctx;
-
-      // Draw red rect immediately to confirm canvas pipeline reaches the material
-      ctx.fillStyle = '#ff0000';
-      ctx.fillRect(0, 0, 1080, 1920);
-      texture.needsUpdate = true;
-      console.log('Canvas ctx set, drew red test rect');
 
       scene.traverse((child) => {
         const mesh = child as THREE.Mesh;
@@ -89,42 +80,15 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
         }
 
         if (mesh.name === 'lAVJNLotEOnEKjC001') {
-          const uvs = mesh.geometry.attributes.uv;
-          console.log('UV attribute:', uvs ? `exists, count: ${uvs.count}` : 'MISSING - no UVs');
-
-          if (!uvs) {
-            // Generate flat UVs from position data
-            const pos = mesh.geometry.attributes.position;
-            const uvArray = new Float32Array(pos.count * 2);
-            const box = new THREE.Box3().setFromBufferAttribute(pos as THREE.BufferAttribute);
-            const size = new THREE.Vector3();
-            box.getSize(size);
-
-            for (let i = 0; i < pos.count; i++) {
-              uvArray[i * 2]     = (pos.getX(i) - box.min.x) / size.x;
-              uvArray[i * 2 + 1] = (pos.getY(i) - box.min.y) / size.y;
-            }
-            mesh.geometry.setAttribute('uv', new THREE.BufferAttribute(uvArray, 2));
-            console.log('Generated UVs from position bounds');
-          }
-
-          const uv = mesh.geometry.attributes.uv;
-          if (uv) {
-            console.log('UV sample 0:', uv.getX(0), uv.getY(0));
-            console.log('UV sample 20:', uv.getX(20), uv.getY(20));
-            console.log('UV sample 40:', uv.getX(40), uv.getY(40));
-          }
-
-          mesh.material = new THREE.MeshBasicMaterial({
-            map: texture,
+          const newMat = new THREE.MeshBasicMaterial({
             toneMapped: false,
             side: THREE.DoubleSide,
             depthTest: false,
-            depthWrite: false,
           });
-          (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
+          mesh.material = newMat;
           mesh.renderOrder = 999;
-          console.log('Canvas texture applied');
+          screenMaterialRef.current = newMat;
+          console.log('Material assigned, ref stored');
         }
       });
 
@@ -173,11 +137,21 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
     // Gentle float
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
 
-    // Draw video frames onto canvas each frame
-    if (!canvasCtxRef.current) return;
-    if (canvasCtxRef.current && videoRef.current) {
-      canvasCtxRef.current.drawImage(videoRef.current, 0, 0, 1080, 1920);
-      if (textureRef.current) textureRef.current.needsUpdate = true;
+    // Draw video frames onto canvas each frame + update material map
+    if (canvasCtxRef.current && videoRef.current && screenMaterialRef.current) {
+      canvasCtxRef.current.fillStyle = '#00ff00';
+      canvasCtxRef.current.fillRect(0, 0, 540, 960);
+      canvasCtxRef.current.drawImage(videoRef.current, 540, 0, 540, 960);
+
+      if (!screenMaterialRef.current.map) {
+        const tex = new THREE.CanvasTexture(canvasCtxRef.current.canvas);
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        screenMaterialRef.current.map = tex;
+        screenMaterialRef.current.needsUpdate = true;
+      } else {
+        screenMaterialRef.current.map.needsUpdate = true;
+      }
     }
   });
 
