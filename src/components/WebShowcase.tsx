@@ -59,38 +59,26 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     document.body.appendChild(video);
     videoRef.current = video;
 
-    // Screen mesh + glass overlays that sit on top of the screen panel
-    const screenMeshes = [
-      'aAftszMZbNEMhoe001', // dark panel — confirmed screen
-      'NfdueRaYqzGELQN001', // glass overlay (roughness 0.01, opacity 0.1)
-      'OXoCgzLWQYAQquU001', // glass overlay
-      'SRAnKQnxTzzZwap001', // glass overlay
-    ];
-
-    // DIAGNOSTIC: paint every mesh a unique bright color to find the screen
+    // Only create and apply texture once the video has actual frame data
     const onReady = () => {
-      const colors = [
-        0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0xffff00, 0x00ffff,
-        0xff8800, 0x8800ff, 0x00ff88, 0xff0088,
-      ];
-      let colorIndex = 0;
+      const texture = new THREE.VideoTexture(video);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.format = THREE.RGBFormat;
+      texture.flipY = false;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      textureRef.current = texture;
 
       scene.traverse((child) => {
         const mesh = child as THREE.Mesh;
-        if (mesh.isMesh) {
+        if (mesh.isMesh && mesh.name === 'lAVJNLotEOnEKjC001') {
           mesh.material = new THREE.MeshBasicMaterial({
-            color: colors[colorIndex % colors.length],
-            side: THREE.DoubleSide,
+            map: texture,
+            toneMapped: false,
+            side: THREE.FrontSide,
           });
-          mesh.userData.diagColor = colorIndex;
-          colorIndex++;
-        }
-      });
-
-      scene.traverse((child) => {
-        const mesh = child as THREE.Mesh;
-        if (mesh.isMesh) {
-          console.log('INDEX:', mesh.userData.diagColor, '| MESH:', mesh.name);
+          (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
+          console.log('Screen texture applied to lAVJNLotEOnEKjC001');
         }
       });
     };
