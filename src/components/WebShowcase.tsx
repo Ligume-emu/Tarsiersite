@@ -59,6 +59,14 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     document.body.appendChild(video);
     videoRef.current = video;
 
+    // Screen mesh + glass overlays that sit on top of the screen panel
+    const screenMeshes = [
+      'aAftszMZbNEMhoe001', // dark panel — confirmed screen
+      'NfdueRaYqzGELQN001', // glass overlay (roughness 0.01, opacity 0.1)
+      'OXoCgzLWQYAQquU001', // glass overlay
+      'SRAnKQnxTzzZwap001', // glass overlay
+    ];
+
     // Only create and apply texture once the video has actual frame data
     const onReady = () => {
       const texture = new THREE.VideoTexture(video);
@@ -71,10 +79,17 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 
       scene.traverse((child) => {
         const mesh = child as THREE.Mesh;
-        if (mesh.isMesh && mesh.name === 'aAftszMZbNEMhoe001') {
-          mesh.material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
+        if (mesh.isMesh && screenMeshes.includes(mesh.name)) {
+          const isPanel = mesh.name === 'aAftszMZbNEMhoe001';
+          mesh.material = new THREE.MeshBasicMaterial({
+            map: texture,
+            toneMapped: false,
+            side: THREE.DoubleSide,
+            transparent: !isPanel,
+            opacity: isPanel ? 1.0 : 0.15,
+          });
           (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
-          console.log('Texture applied after video ready');
+          console.log('Applied to:', mesh.name);
         }
       });
     };
@@ -132,6 +147,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
       object={scene}
       scale={8.5}
       position={[0, 0, 0]}
+      rotation={[0, Math.PI, 0]}
     />
   );
 }
