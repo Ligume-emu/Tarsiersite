@@ -49,50 +49,52 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 
   useEffect(() => {
     const video = document.createElement('video');
-    video.src = videoSrc;
     video.crossOrigin = 'anonymous';
-    video.muted = true;
     video.loop = true;
+    video.muted = true;
     video.playsInline = true;
+    video.setAttribute('playsinline', '');
     video.style.display = 'none';
+    video.src = videoSrc;
     document.body.appendChild(video);
     videoRef.current = video;
 
-    const texture = new THREE.VideoTexture(video);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    texture.format = THREE.RGBFormat;
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.flipY = false;
-    textureRef.current = texture;
+    // Only create and apply texture once the video has actual frame data
+    const onReady = () => {
+      const texture = new THREE.VideoTexture(video);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.format = THREE.RGBFormat;
+      texture.flipY = false;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      textureRef.current = texture;
 
-    scene.traverse((child) => {
-      const mesh = child as THREE.Mesh;
-      if (mesh.isMesh && mesh.name === 'aAftszMZbNEMhoe001') {
-        console.log('Applied texture to:', child.name);
-        const mat = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
-        mat.needsUpdate = true;
-        mesh.material = mat;
-      }
+      scene.traverse((child) => {
+        const mesh = child as THREE.Mesh;
+        if (mesh.isMesh && mesh.name === 'aAftszMZbNEMhoe001') {
+          mesh.material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
+          (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
+          console.log('Texture applied after video ready');
+        }
+      });
+    };
+
+    // loadeddata fires when first frame is available
+    video.addEventListener('loadeddata', onReady, { once: true });
+
+    video.play().catch((err) => {
+      console.error('Video play failed:', err);
+      const playOnInteraction = () => {
+        video.play();
+        window.removeEventListener('pointerdown', playOnInteraction);
+      };
+      window.addEventListener('pointerdown', playOnInteraction);
     });
 
-    // Delayed play — avoids autoplay block on some browsers
-    const timer = setTimeout(() => {
-      video.play().catch(() => {
-        // Fallback: play on first user interaction
-        const onPointerDown = () => {
-          video.play().catch(() => {});
-          window.removeEventListener('pointerdown', onPointerDown);
-        };
-        window.addEventListener('pointerdown', onPointerDown);
-      });
-    }, 500);
-
     return () => {
-      clearTimeout(timer);
       video.pause();
       document.body.removeChild(video);
-      texture.dispose();
+      textureRef.current?.dispose();
       videoRef.current = null;
       textureRef.current = null;
     };
