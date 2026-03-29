@@ -38,13 +38,12 @@ function Starfield() {
 
 type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: number; lastY: number };
 
-function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
+function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragState>; videoRef: React.RefObject<HTMLVideoElement | null> }) {
   const { scene } = useGLTF(iphoneModel);
   const groupRef = useRef<THREE.Group>(null);
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const textureRef = useRef<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
@@ -86,8 +85,13 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     // loadeddata fires when first frame is available
     video.addEventListener('loadeddata', onReady, { once: true });
 
-    video.play().catch((err) => {
-      console.error('Video play failed:', err);
+    video.play().then(() => {
+      console.log('Video playing:', !video.paused);
+      console.log('Video readyState:', video.readyState);
+      console.log('Video src resolved:', video.currentSrc);
+      console.log('Video duration:', video.duration);
+    }).catch((err) => {
+      console.error('Autoplay blocked:', err.message);
       const playOnInteraction = () => {
         video.play();
         window.removeEventListener('pointerdown', playOnInteraction);
@@ -141,7 +145,7 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   );
 }
 
-function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
+function SceneContent({ dragRef, videoRef }: { dragRef: React.RefObject<DragState>; videoRef: React.RefObject<HTMLVideoElement | null> }) {
   return (
     <>
       <ambientLight intensity={0.35} />
@@ -149,7 +153,7 @@ function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
       <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
       <Suspense fallback={null}>
-        <IPhoneWithVideo dragRef={dragRef} />
+        <IPhoneWithVideo dragRef={dragRef} videoRef={videoRef} />
       </Suspense>
     </>
   );
@@ -159,6 +163,7 @@ export default function WebShowcase() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: false, amount: 0.3 });
   const dragRef = useRef<DragState>({ rotX: -0.12, rotY: 0.15, isDragging: false, lastX: 0, lastY: 0 });
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     dragRef.current.isDragging = true;
@@ -192,6 +197,11 @@ export default function WebShowcase() {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
+      onClick={() => {
+        if (videoRef.current?.paused) {
+          videoRef.current.play().then(() => console.log('Manual play triggered'));
+        }
+      }}
     >
       {/* ── Full-bleed 3D canvas — position: absolute, inset: 0 ── */}
       <div className="absolute inset-0">
@@ -201,7 +211,7 @@ export default function WebShowcase() {
           camera={{ position: [0, 0, 2.5], fov: 38 }}
           gl={{ antialias: true, alpha: true }}
         >
-          <SceneContent dragRef={dragRef} />
+          <SceneContent dragRef={dragRef} videoRef={videoRef} />
         </Canvas>
         {/* Ambient glow */}
         <div
