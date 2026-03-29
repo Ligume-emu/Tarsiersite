@@ -82,11 +82,10 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
         if (mesh.name === 'lAVJNLotEOnEKjC001') {
           const newMat = new THREE.MeshBasicMaterial({
             toneMapped: false,
-            side: THREE.DoubleSide,
-            depthTest: false,
+            side: THREE.FrontSide,
           });
           mesh.material = newMat;
-          mesh.renderOrder = 999;
+          mesh.renderOrder = 0;
           screenMaterialRef.current = newMat;
           console.log('Material assigned, ref stored');
         }
@@ -138,13 +137,16 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
 
     // Draw video frames onto canvas each frame + update material map
-    if (canvasCtxRef.current && videoRef.current && screenMaterialRef.current) {
-      canvasCtxRef.current.fillStyle = '#00ff00';
-      canvasCtxRef.current.fillRect(0, 0, 540, 960);
-      canvasCtxRef.current.drawImage(videoRef.current, 540, 0, 540, 960);
+    const ctx = canvasCtxRef.current;
+    const vid = videoRef.current;
+    if (ctx && vid && screenMaterialRef.current) {
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(vid, -1080, 0, 1080, 1920);
+      ctx.restore();
 
       if (!screenMaterialRef.current.map) {
-        const tex = new THREE.CanvasTexture(canvasCtxRef.current.canvas);
+        const tex = new THREE.CanvasTexture(ctx.canvas);
         tex.minFilter = THREE.LinearFilter;
         tex.magFilter = THREE.LinearFilter;
         screenMaterialRef.current.map = tex;
@@ -162,7 +164,7 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
       object={scene}
       scale={8.5}
       position={[0, 0, 0]}
-      rotation={[0, 0, 0]}
+      rotation={[0, Math.PI, 0]}
     />
   );
 }
