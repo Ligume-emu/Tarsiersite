@@ -38,124 +38,66 @@ function Starfield() {
 
 type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: number; lastY: number };
 
-function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragState>; videoRef: React.RefObject<HTMLVideoElement | null> }) {
+function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const { scene } = useGLTF(iphoneModel);
   const groupRef = useRef<THREE.Group>(null);
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
-
-  const textureRef = useRef<THREE.CanvasTexture | null>(null);
-  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
-  const screenMaterialRef = useRef<THREE.MeshBasicMaterial | null>(null);
+  const textureRef = useRef<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
-    const video = document.createElement('video');
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-    video.setAttribute('playsinline', '');
-    video.style.display = 'none';
-    video.src = videoSrc;
-    document.body.appendChild(video);
-    videoRef.current = video;
+    scene.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh || mesh.name !== 'HkNSnYzBPABcqwM001') return;
 
-    const onReady = () => {
-      // Offscreen canvas — bypasses UV/WebGL video sampling issues
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1920;
-      const ctx = canvas.getContext('2d')!;
+      const video = document.createElement('video');
+      video.src = videoSrc;
+      video.autoplay = true;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.style.display = 'none';
+      document.body.appendChild(video);
 
-      canvasCtxRef.current = ctx;
+      video.addEventListener('canplaythrough', () => {
+        const texture = new THREE.VideoTexture(video);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        textureRef.current = texture;
 
-      scene.traverse((child) => {
-        const mesh = child as THREE.Mesh;
-        if (!mesh.isMesh) return;
-
-        // Hide screen placeholder content meshes (emissive white = glowing screen elements)
-        const mat = mesh.material as THREE.MeshStandardMaterial;
-        if (mat?.emissive?.getHex() === 0xffffff && mesh.name !== 'lAVJNLotEOnEKjC001') {
-          mesh.visible = false;
-          console.log('Hidden placeholder mesh:', mesh.name);
-        }
-
-        if (mesh.name === 'lAVJNLotEOnEKjC001') {
-          const newMat = new THREE.MeshBasicMaterial({
-            toneMapped: false,
-            side: THREE.DoubleSide,
-          });
-          mesh.material = newMat;
-          mesh.renderOrder = 0;
-          screenMaterialRef.current = newMat;
-
-          const screenCanvas = document.createElement('canvas');
-          screenCanvas.width = 1080;
-          screenCanvas.height = 1920;
-          canvasCtxRef.current = screenCanvas.getContext('2d');
-
-          const tex = new THREE.CanvasTexture(screenCanvas);
-          tex.minFilter = THREE.LinearFilter;
-          tex.magFilter = THREE.LinearFilter;
-          newMat.map = tex;
-          newMat.needsUpdate = true;
-          textureRef.current = tex;
-          console.log('Canvas + texture created and assigned immediately');
-        }
-      });
-
-      video.play().then(() => {
-        console.log('Video playing, readyState:', video.readyState);
-      }).catch((err) => console.error('Play failed:', err));
-    };
-
-    video.addEventListener('canplaythrough', onReady, { once: true });
-
-    video.play().catch((err) => {
-      console.error('Autoplay blocked:', err.message);
-      const playOnInteraction = () => {
+        mesh.material = new THREE.MeshBasicMaterial({
+          map: texture,
+          toneMapped: false,
+          side: THREE.FrontSide,
+        });
+        (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
         video.play();
-        window.removeEventListener('pointerdown', playOnInteraction);
-      };
-      window.addEventListener('pointerdown', playOnInteraction);
-    });
+        console.log('Video texture applied to HkNSnYzBPABcqwM001');
+      }, { once: true });
 
-    return () => {
-      video.pause();
-      document.body.removeChild(video);
-      textureRef.current?.dispose();
-      videoRef.current = null;
-      textureRef.current = null;
-      canvasCtxRef.current = null;
-    };
+      video.play().catch(() => {});
+    });
   }, [scene]);
 
-  // Fix 3 — Idle animation + cursor LERP
   useFrame((state) => {
     if (!groupRef.current) return;
     const drag = dragRef.current;
 
-    // Slow idle rotation only when cursor is not actively driving the model
     if (Math.abs(drag.rotY - currentRotY.current) < 0.01) {
       drag.rotY += 0.003;
     }
 
-    // Cursor LERP — unchanged
     currentRotY.current += (drag.rotY - currentRotY.current) * 0.1;
     currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
     groupRef.current.rotation.y = currentRotY.current;
     groupRef.current.rotation.x = currentRotX.current;
 
-    // Gentle float
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
 
-    // Draw video frames onto canvas each frame
-    if (canvasCtxRef.current && videoRef.current && textureRef.current) {
-      canvasCtxRef.current.drawImage(videoRef.current, 0, 0, 1080, 1920);
-      textureRef.current.needsUpdate = true;
-    }
+    if (textureRef.current) textureRef.current.needsUpdate = true;
   });
 
-  // Fix 2 — Scale 8, commanding presence
   return (
     <primitive
       ref={groupRef}
@@ -167,7 +109,7 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
   );
 }
 
-function SceneContent({ dragRef, videoRef }: { dragRef: React.RefObject<DragState>; videoRef: React.RefObject<HTMLVideoElement | null> }) {
+function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   return (
     <>
       <ambientLight intensity={0.35} />
@@ -175,7 +117,7 @@ function SceneContent({ dragRef, videoRef }: { dragRef: React.RefObject<DragStat
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
       <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
       <Suspense fallback={null}>
-        <IPhoneWithVideo dragRef={dragRef} videoRef={videoRef} />
+        <IPhoneWithVideo dragRef={dragRef} />
       </Suspense>
     </>
   );
@@ -185,7 +127,6 @@ export default function WebShowcase() {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: false, amount: 0.3 });
   const dragRef = useRef<DragState>({ rotX: -0.12, rotY: 0.15, isDragging: false, lastX: 0, lastY: 0 });
-  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
     dragRef.current.isDragging = true;
@@ -219,11 +160,6 @@ export default function WebShowcase() {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
-      onClick={() => {
-        if (videoRef.current?.paused) {
-          videoRef.current.play().then(() => console.log('Manual play triggered'));
-        }
-      }}
     >
       {/* ── Full-bleed 3D canvas — position: absolute, inset: 0 ── */}
       <div className="absolute inset-0">
@@ -233,7 +169,7 @@ export default function WebShowcase() {
           camera={{ position: [0, 0, 2.5], fov: 38 }}
           gl={{ antialias: true, alpha: true }}
         >
-          <SceneContent dragRef={dragRef} videoRef={videoRef} />
+          <SceneContent dragRef={dragRef} />
         </Canvas>
         {/* Ambient glow */}
         <div
