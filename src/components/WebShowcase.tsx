@@ -67,29 +67,30 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
       'SRAnKQnxTzzZwap001', // glass overlay
     ];
 
-    // Only create and apply texture once the video has actual frame data
+    // DIAGNOSTIC: paint every mesh a unique bright color to find the screen
     const onReady = () => {
-      const texture = new THREE.VideoTexture(video);
-      texture.minFilter = THREE.LinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      texture.format = THREE.RGBFormat;
-      texture.flipY = false;
-      texture.colorSpace = THREE.SRGBColorSpace;
-      textureRef.current = texture;
+      const colors = [
+        0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0xffff00, 0x00ffff,
+        0xff8800, 0x8800ff, 0x00ff88, 0xff0088,
+      ];
+      let colorIndex = 0;
 
       scene.traverse((child) => {
         const mesh = child as THREE.Mesh;
-        if (mesh.isMesh && screenMeshes.includes(mesh.name)) {
-          const isPanel = mesh.name === 'aAftszMZbNEMhoe001';
+        if (mesh.isMesh) {
           mesh.material = new THREE.MeshBasicMaterial({
-            map: texture,
-            toneMapped: false,
+            color: colors[colorIndex % colors.length],
             side: THREE.DoubleSide,
-            transparent: !isPanel,
-            opacity: isPanel ? 1.0 : 0.15,
           });
-          (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
-          console.log('Applied to:', mesh.name);
+          mesh.userData.diagColor = colorIndex;
+          colorIndex++;
+        }
+      });
+
+      scene.traverse((child) => {
+        const mesh = child as THREE.Mesh;
+        if (mesh.isMesh) {
+          console.log('INDEX:', mesh.userData.diagColor, '| MESH:', mesh.name);
         }
       });
     };
