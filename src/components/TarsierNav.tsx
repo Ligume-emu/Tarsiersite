@@ -6,9 +6,12 @@ const TarsierNav = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 300);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const container = document.querySelector('.snap-container') as HTMLElement | null;
+    const target: HTMLElement | Window = container ?? window;
+    const getScrollTop = () => (container ? container.scrollTop : window.scrollY);
+    const onScroll = () => setScrolled(getScrollTop() > 80);
+    target.addEventListener("scroll", onScroll, { passive: true });
+    return () => target.removeEventListener("scroll", onScroll);
   }, []);
 
   const links = [

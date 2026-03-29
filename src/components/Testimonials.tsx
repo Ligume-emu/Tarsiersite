@@ -9,7 +9,7 @@ const testimonials = [
 
 const TestimonialCard = ({ t, i }: { t: typeof testimonials[0]; i: number }) => {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '0px 0px -60px 0px' });
+  const isInView = useInView(ref, { once: false, amount: 0.3 });
 
   return (
     <div ref={ref} className={`flex ${t.align === "right" ? "justify-end" : "justify-start"}`}>
@@ -38,8 +38,8 @@ const TestimonialCard = ({ t, i }: { t: typeof testimonials[0]; i: number }) => 
 
 const Testimonials = () => {
   return (
-    <section className="py-20 lg:py-28" style={{ backgroundColor: "hsl(var(--sand) / 0.25)" }}>
-      <div className="max-w-[800px] mx-auto px-6 flex flex-col gap-8">
+    <section className="flex flex-col justify-center py-8 lg:py-10" style={{ backgroundColor: "hsl(var(--sand) / 0.25)" }}>
+      <div className="max-w-[800px] mx-auto px-6 flex flex-col gap-5 w-full">
         {testimonials.map((t, i) => (
           <TestimonialCard key={i} t={t} i={i} />
         ))}

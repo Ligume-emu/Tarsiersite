@@ -6,11 +6,12 @@ interface FadeUpProps {
   delay?: number;
   className?: string;
   distance?: number;
+  once?: boolean;
 }
 
-const FadeUp = ({ children, delay = 0, className = '', distance = 32 }: FadeUpProps) => {
+const FadeUp = ({ children, delay = 0, className = '', distance = 32, once = false }: FadeUpProps) => {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '0px 0px -60px 0px' });
+  const isInView = useInView(ref, { once, amount: 0.3 });
 
   return (
     <motion.div

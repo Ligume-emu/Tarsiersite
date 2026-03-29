@@ -14,7 +14,7 @@ export default function PreFooterCTA() {
   return (
     <section
       ref={ref}
-      className="bg-[#F7F4F1] pt-32 pb-0 px-6 md:px-16 overflow-hidden"
+      className="bg-[#F7F4F1] py-14 px-6 md:px-16 flex flex-col justify-center"
     >
       <div className="max-w-6xl mx-auto">
         <motion.p
@@ -55,7 +55,7 @@ export default function PreFooterCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-12 mb-20"
+          className="mt-8 mb-0"
         >
           <a
             href="/#contact"

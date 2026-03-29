@@ -100,12 +100,14 @@ section + section {
   height: 100vh;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
 }
 
 .snap-container > section,
 .snap-container > footer {
   height: 100vh !important;
-  min-height: 0 !important;
+  min-height: 100vh !important;
+  max-height: 100vh !important;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow: hidden;

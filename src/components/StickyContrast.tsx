@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import tarsierMascot from '@/assets/tarsier-mascot.png';
 
 const statements = [
@@ -23,83 +23,104 @@ const statements = [
   },
 ];
 
+const INTERVAL_MS = 4000;
+
 const StickyContrast = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end'],
-  });
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const statement1Opacity = useTransform(scrollYProgress, [0, 0.2, 0.33, 0.5], [1, 1, 0, 0]);
-  const statement2Opacity = useTransform(scrollYProgress, [0.3, 0.45, 0.6, 0.75], [0, 1, 1, 0]);
-  const statement3Opacity = useTransform(scrollYProgress, [0.65, 0.8, 1, 1], [0, 1, 1, 1]);
-
-  const opacities = [statement1Opacity, statement2Opacity, statement3Opacity];
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % statements.length);
+    }, INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <section
-      ref={containerRef}
-      className="relative"
-      style={{ height: '300vh', backgroundColor: 'hsl(var(--bg-dark))' }}
+      className="relative flex items-center"
+      style={{ backgroundColor: 'hsl(var(--bg-dark))' }}
     >
-      {/* Sticky container */}
-      <div className="sticky top-0 h-screen flex items-center overflow-hidden">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
-          {/* Left — scrolling statements */}
-          <div className="relative h-[320px] sm:h-[280px]">
-            {statements.map((s, i) => (
-              <motion.div
-                key={i}
-                className="absolute inset-0 flex flex-col justify-center"
-                style={{ opacity: opacities[i] }}
-              >
-                {/* Them */}
-                <div className="mb-8">
-                  <span className="font-mono text-[10px] text-text-on-dark/30 uppercase tracking-[0.16em] mb-3 block">
-                    {s.label}
-                  </span>
-                  <p className="font-body text-[17px] text-text-on-dark/40 leading-relaxed line-through decoration-tarsier/40">
-                    {s.them}
-                  </p>
-                </div>
-
-                {/* Us */}
-                <div>
-                  <span className="font-mono text-[10px] text-tarsier uppercase tracking-[0.16em] mb-3 block">
-                    {s.usLabel}
-                  </span>
-                  <p className="font-display text-[28px] lg:text-[36px] font-semibold text-text-on-dark leading-tight">
-                    {s.us}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Right — pinned visual */}
-          <div className="hidden lg:flex items-center justify-center">
-            <div className="relative w-[360px] h-[360px] flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-tarsier/5 blur-3xl" />
-              <img
-                src={tarsierMascot}
-                alt="Tarsier"
-                className="w-[280px] h-auto object-contain opacity-20 hover:opacity-30 transition-opacity duration-700"
-              />
-              {/* Progress dots */}
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-2">
-                {statements.map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="w-1.5 h-1.5 rounded-full bg-tarsier"
-                    style={{ opacity: opacities[i] }}
-                  />
-                ))}
+        {/* Left — AnimatePresence statement cycling */}
+        <div className="relative h-[300px] sm:h-[260px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIndex}
+              className="absolute inset-0 flex flex-col justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* Them */}
+              <div className="mb-7">
+                <span className="font-mono text-[10px] text-text-on-dark/30 uppercase tracking-[0.16em] mb-3 block">
+                  {statements[activeIndex].label}
+                </span>
+                <p className="font-body text-[16px] text-text-on-dark/40 leading-relaxed line-through decoration-tarsier/40">
+                  {statements[activeIndex].them}
+                </p>
               </div>
+
+              {/* Us */}
+              <div>
+                <span className="font-mono text-[10px] text-tarsier uppercase tracking-[0.16em] mb-3 block">
+                  {statements[activeIndex].usLabel}
+                </span>
+                <p className="font-display text-[26px] lg:text-[32px] font-semibold text-text-on-dark leading-tight">
+                  {statements[activeIndex].us}
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Right — mascot + clickable dots */}
+        <div className="hidden lg:flex items-center justify-center">
+          <div className="relative w-[320px] h-[320px] flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-tarsier/5 blur-3xl" />
+            <img
+              src={tarsierMascot}
+              alt="Tarsier"
+              className="w-[240px] h-auto object-contain opacity-20 hover:opacity-30 transition-opacity duration-700"
+            />
+            {/* Clickable progress dots */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-3">
+              {statements.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveIndex(i)}
+                  aria-label={`Statement ${i + 1}`}
+                  className="w-2 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    backgroundColor: 'hsl(var(--tarsier))',
+                    opacity: i === activeIndex ? 1 : 0.25,
+                    transform: i === activeIndex ? 'scale(1.3)' : 'scale(1)',
+                  }}
+                />
+              ))}
             </div>
           </div>
-
         </div>
+
+        {/* Mobile dots */}
+        <div className="lg:hidden flex justify-center gap-3 -mt-4">
+          {statements.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              aria-label={`Statement ${i + 1}`}
+              className="w-2 h-2 rounded-full transition-all duration-300"
+              style={{
+                backgroundColor: 'hsl(var(--tarsier))',
+                opacity: i === activeIndex ? 1 : 0.25,
+                transform: i === activeIndex ? 'scale(1.3)' : 'scale(1)',
+              }}
+            />
+          ))}
+        </div>
+
       </div>
     </section>
   );

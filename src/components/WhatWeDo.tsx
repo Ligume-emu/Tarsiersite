@@ -24,14 +24,14 @@ const pillars = [
 
 const WhatWeDo = () => {
   return (
-    <section id="services" className="py-28 lg:py-36 bg-bg-warm">
+    <section id="services" className="py-8 lg:py-10 bg-bg-warm flex flex-col justify-center">
       <div className="max-w-[1280px] mx-auto px-6 lg:px-12">
 
-        <FadeUp className="mb-20">
-          <span className="font-mono text-[11px] text-tarsier uppercase tracking-[0.14em] mb-5 block">
+        <FadeUp className="mb-6 lg:mb-8">
+          <span className="font-mono text-[11px] text-tarsier uppercase tracking-[0.14em] mb-3 block">
             What We Do
           </span>
-          <h2 className="font-display text-[52px] lg:text-[72px] font-bold text-text-primary leading-[1.0]">
+          <h2 className="font-display text-[40px] lg:text-[52px] font-bold text-text-primary leading-[1.0]">
             Three practices.<br />
             <em className="not-italic text-tarsier">Infinite scope.</em>
           </h2>
@@ -40,22 +40,22 @@ const WhatWeDo = () => {
         <div className="flex flex-col divide-y divide-sand">
           {pillars.map((p, i) => (
             <FadeUp key={i} delay={i * 0.12}>
-              <div className="group py-10 lg:py-14 grid grid-cols-1 lg:grid-cols-[120px_1fr_auto] gap-6 lg:gap-12 items-start cursor-default">
+              <div className="group py-4 lg:py-5 grid grid-cols-1 lg:grid-cols-[80px_1fr_auto] gap-4 lg:gap-10 items-start cursor-default">
 
                 {/* Number */}
-                <span className="font-mono text-[13px] text-tarsier tracking-widest pt-2">
+                <span className="font-mono text-[12px] text-tarsier tracking-widest pt-1">
                   {p.number}
                 </span>
 
                 {/* Content */}
                 <div>
-                  <h3 className="font-display text-[40px] lg:text-[56px] font-bold text-text-primary leading-tight mb-3 group-hover:text-tarsier transition-colors duration-300">
+                  <h3 className="font-display text-[28px] lg:text-[36px] font-bold text-text-primary leading-tight mb-2 group-hover:text-tarsier transition-colors duration-300">
                     {p.name}
                   </h3>
-                  <p className="font-body text-[16px] text-text-secondary leading-relaxed max-w-[520px]">
+                  <p className="font-body text-[14px] text-text-secondary leading-relaxed max-w-[520px]">
                     {p.line}
                   </p>
-                  <p className="font-mono text-[12px] text-tarsier/70 mt-3 tracking-wide">
+                  <p className="font-mono text-[11px] text-tarsier/70 mt-2 tracking-wide">
                     {p.accent}
                   </p>
                 </div>
@@ -71,7 +71,7 @@ const WhatWeDo = () => {
         </div>
 
         {/* Curiosity gap CTA */}
-        <FadeUp delay={0.4} className="mt-16 flex justify-end">
+        <FadeUp delay={0.4} className="mt-6 flex justify-end">
           <Link
             to="/services"
             className="inline-flex items-center gap-3 font-mono text-[13px] text-text-secondary hover:text-tarsier transition-colors group"

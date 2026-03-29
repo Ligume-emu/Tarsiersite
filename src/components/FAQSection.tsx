@@ -10,9 +10,9 @@ const faqs = [
 const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   return (
-    <section className="py-20 lg:py-28 bg-bg-warm">
-      <div className="max-w-[800px] mx-auto px-6">
-        <FadeUp className="text-center mb-14">
+    <section className="py-8 lg:py-10 bg-bg-warm flex flex-col justify-center">
+      <div className="max-w-[800px] mx-auto px-6 w-full">
+        <FadeUp className="text-center mb-6">
           <span className="font-mono text-[11px] text-tarsier uppercase tracking-[0.12em] mb-4 block">FAQ</span>
           <h2 className="font-display text-[40px] lg:text-[52px] font-semibold text-text-primary leading-tight">Got Questions?</h2>
         </FadeUp>

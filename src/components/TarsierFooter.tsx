@@ -9,9 +9,9 @@ const socials = [
 ];
 
 const TarsierFooter = () => (
-  <footer id="contact" className="bg-[#141210] pt-0 pb-10 relative overflow-hidden">
+  <footer id="contact" className="bg-[#141210] relative overflow-hidden flex flex-col justify-center">
     <img src={tarsierFull} alt="" className="absolute left-1/2 -translate-x-1/2 bottom-0 w-[300px] lg:w-[400px] opacity-[0.03] pointer-events-none" />
-    <div className="max-w-[1280px] mx-auto px-6 text-center relative z-10">
+    <div className="max-w-[1280px] mx-auto px-6 text-center relative z-10 py-10">
       <h2 className="font-display text-[48px] lg:text-[64px] font-semibold text-text-on-dark mb-4 leading-tight">
         Let's build something together.
       </h2>

@@ -143,7 +143,7 @@ function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 
 export default function WebShowcase() {
   const sectionRef = useRef(null);
-  const inView = useInView(sectionRef, { once: true, margin: '-10%' });
+  const inView = useInView(sectionRef, { once: false, amount: 0.3 });
   const dragRef = useRef<DragState>({ rotX: -0.12, rotY: 0.15, isDragging: false, lastX: 0, lastY: 0 });
 
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
@@ -171,9 +171,9 @@ export default function WebShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="bg-[#0A0806] py-24 px-6 md:px-16 overflow-hidden"
+      className="bg-[#0A0806] py-6 px-6 md:px-10 flex flex-col justify-center"
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto w-full">
         {/* Label */}
         <motion.p
           initial={{ opacity: 0, y: 16 }}
@@ -189,7 +189,7 @@ export default function WebShowcase() {
           initial={{ opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-16 leading-[1.05]"
+          className="mb-6 leading-[1.05]"
           style={{
             fontFamily: 'Cormorant Garamond, serif',
             fontSize: 'clamp(2rem, 5vw, 4rem)',
@@ -205,7 +205,7 @@ export default function WebShowcase() {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="relative rounded-2xl overflow-hidden border border-white/10"
-          style={{ height: '640px', background: '#060504', cursor: 'grab' }}
+          style={{ height: 'clamp(300px, calc(100vh - 260px), 520px)', background: '#060504', cursor: 'grab' }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
