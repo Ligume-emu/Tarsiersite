@@ -44,25 +44,40 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const currentRotY = useRef(0.15);
   const currentRotX = useRef(-0.12);
 
-  // Fix 3 — Log mesh material properties to identify screen mesh
+  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
+
   useEffect(() => {
+    const video = document.createElement('video');
+    video.src = videoSrc;
+    video.autoplay = true;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.style.display = 'none';
+    document.body.appendChild(video);
+    video.play().catch(() => {});
+
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.format = THREE.RGBAFormat;
+    videoTexture.flipY = false;
+    videoTextureRef.current = videoTexture;
+
     scene.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-        const m = mesh.material as THREE.MeshStandardMaterial;
-        console.log(
-          'MESH:', mesh.name,
-          '| color:', m.color?.getHexString(),
-          '| roughness:', m.roughness,
-          '| metalness:', m.metalness,
-          '| opacity:', m.opacity,
-          '| transparent:', m.transparent,
-          '| emissive:', m.emissive?.getHexString(),
-        );
+      const mesh = child as THREE.Mesh;
+      if (mesh.isMesh && mesh.name === 'aAftszMZbNEMhoe001') {
+        mesh.material = new THREE.MeshBasicMaterial({ map: videoTexture });
+        (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
       }
     });
-    // TODO: apply VideoTexture to [MESH NAME] after confirmation
-    // videoSrc is ready: see const videoSrc above
+
+    return () => {
+      video.pause();
+      document.body.removeChild(video);
+      videoTexture.dispose();
+      videoTextureRef.current = null;
+    };
   }, [scene]);
 
   // Fix 3 — Idle animation + cursor LERP
@@ -83,6 +98,9 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 
     // Gentle float
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
+
+    // Advance video texture each frame
+    if (videoTextureRef.current) videoTextureRef.current.needsUpdate = true;
   });
 
   // Fix 2 — Scale 8, commanding presence
