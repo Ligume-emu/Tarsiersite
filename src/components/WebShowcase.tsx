@@ -83,7 +83,7 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
     };
 
     // loadeddata fires when first frame is available
-    video.addEventListener('loadeddata', onReady, { once: true });
+    video.addEventListener('canplaythrough', onReady, { once: true });
 
     video.play().then(() => {
       console.log('Video playing:', !video.paused);
@@ -127,8 +127,8 @@ function IPhoneWithVideo({ dragRef, videoRef }: { dragRef: React.RefObject<DragS
     // Gentle float
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
 
-    // Advance video texture each frame only when playing
-    if (textureRef.current && videoRef.current && !videoRef.current.paused) {
+    // Advance video texture each frame
+    if (textureRef.current) {
       textureRef.current.needsUpdate = true;
     }
   });
