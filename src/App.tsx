@@ -17,6 +17,20 @@ function AppContent() {
   const { isMobile, needsPermission, permissionGranted, requestIOSPermission } =
     useDeviceControlsContext();
 
+  // Set --app-height CSS variable for iOS Safari dynamic toolbar
+  useEffect(() => {
+    const setAppHeight = () => {
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+    window.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', setAppHeight);
+    setAppHeight();
+    return () => {
+      window.removeEventListener('resize', setAppHeight);
+      window.removeEventListener('orientationchange', setAppHeight);
+    };
+  }, []);
+
   useEffect(() => {
     if (isHome) {
       document.body.style.overflow = 'hidden';

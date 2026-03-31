@@ -129,10 +129,10 @@ spline-viewer::part(logo),
   display: none !important;
 }
 
-/* ── Mobile: dvh snap fixes ──────────────────────────────────────────────── */
+/* ── Mobile: app-height snap fixes (--app-height set by JS for iOS Safari) ── */
 @media (max-width: 768px) {
   .snap-container {
-    height: 100dvh;
+    height: var(--app-height, 100dvh);
     overscroll-behavior: none;
     touch-action: pan-y;
     -ms-overflow-style: none;
@@ -145,9 +145,9 @@ spline-viewer::part(logo),
 
   .snap-container > section,
   .snap-container > footer {
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
+    height: var(--app-height, 100dvh) !important;
+    min-height: var(--app-height, 100dvh) !important;
+    max-height: var(--app-height, 100dvh) !important;
     scroll-snap-align: start;
     scroll-snap-stop: always;
     overflow: hidden;
