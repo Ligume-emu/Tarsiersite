@@ -1,12 +1,12 @@
-import { useRef, useEffect, Suspense } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { useRef, useEffect, Suspense, useState } from 'react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { useDeviceControls, type DeviceRotation } from '@/hooks/useDeviceControls';
 import clientVideo from '@/assets/NPSSITE.mov';
 const iphoneModel = '/models/IPHONE17.glb';
 
-// Ready for VideoTexture application — do not use until mesh name confirmed from console
 const videoSrc = clientVideo;
 
 function Starfield() {
@@ -38,7 +38,15 @@ function Starfield() {
 
 type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: number; lastY: number };
 
-function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
+function IPhoneWithVideo({
+  dragRef,
+  isMobile,
+  deviceRotRef,
+}: {
+  dragRef: React.RefObject<DragState>;
+  isMobile: boolean;
+  deviceRotRef: React.RefObject<DeviceRotation>;
+}) {
   const { scene } = useGLTF(iphoneModel);
   const groupRef = useRef<THREE.Group>(null);
   const currentRotY = useRef(0.15);
@@ -85,19 +93,24 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
 
   useFrame((state) => {
     if (!groupRef.current) return;
-    const drag = dragRef.current;
 
-    if (Math.abs(drag.rotY - currentRotY.current) < 0.01) {
-      drag.rotY += 0.003;
+    if (isMobile) {
+      // Auto-rotate base + device tilt/touch offset
+      currentRotY.current += 0.003;
+      groupRef.current.rotation.y = currentRotY.current + deviceRotRef.current.y;
+      groupRef.current.rotation.x = -0.12 + deviceRotRef.current.x;
+    } else {
+      const drag = dragRef.current;
+      if (Math.abs(drag.rotY - currentRotY.current) < 0.01) {
+        drag.rotY += 0.003;
+      }
+      currentRotY.current += (drag.rotY - currentRotY.current) * 0.1;
+      currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
+      groupRef.current.rotation.y = currentRotY.current;
+      groupRef.current.rotation.x = currentRotX.current;
     }
 
-    currentRotY.current += (drag.rotY - currentRotY.current) * 0.1;
-    currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
-    groupRef.current.rotation.y = currentRotY.current;
-    groupRef.current.rotation.x = currentRotX.current;
-
     groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
-
     if (textureRef.current) textureRef.current.needsUpdate = true;
   });
 
@@ -112,7 +125,15 @@ function IPhoneWithVideo({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   );
 }
 
-function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
+function SceneContent({
+  dragRef,
+  isMobile,
+  deviceRotRef,
+}: {
+  dragRef: React.RefObject<DragState>;
+  isMobile: boolean;
+  deviceRotRef: React.RefObject<DeviceRotation>;
+}) {
   return (
     <>
       <ambientLight intensity={0.35} />
@@ -120,7 +141,7 @@ function SceneContent({ dragRef }: { dragRef: React.RefObject<DragState> }) {
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
       <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
       <Suspense fallback={null}>
-        <IPhoneWithVideo dragRef={dragRef} />
+        <IPhoneWithVideo dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
       </Suspense>
     </>
   );
@@ -131,7 +152,18 @@ export default function WebShowcase() {
   const inView = useInView(sectionRef, { once: false, amount: 0.3 });
   const dragRef = useRef<DragState>({ rotX: -0.12, rotY: 0.15, isDragging: false, lastX: 0, lastY: 0 });
 
+  const { isMobile, needsPermission, permissionGranted, requestIOSPermission, deviceRotRef } =
+    useDeviceControls();
+
+  const [showHint, setShowHint] = useState(true);
+  useEffect(() => {
+    if (!isMobile) return;
+    const t = setTimeout(() => setShowHint(false), 3000);
+    return () => clearTimeout(t);
+  }, [isMobile]);
+
   function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (isMobile) return;
     dragRef.current.isDragging = true;
     dragRef.current.lastX = e.clientX;
     dragRef.current.lastY = e.clientY;
@@ -139,7 +171,7 @@ export default function WebShowcase() {
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!dragRef.current.isDragging) return;
+    if (isMobile || !dragRef.current.isDragging) return;
     const dx = e.clientX - dragRef.current.lastX;
     const dy = e.clientY - dragRef.current.lastY;
     dragRef.current.rotY += dx * 0.008;
@@ -153,12 +185,11 @@ export default function WebShowcase() {
     dragRef.current.isDragging = false;
   }
 
-  // Fix 1 — Full-bleed canvas; text floats over at z-10
   return (
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-[#0A0806]"
-      style={{ cursor: 'grab' }}
+      style={{ cursor: isMobile ? 'default' : 'grab' }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -172,7 +203,7 @@ export default function WebShowcase() {
           camera={{ position: [0, 0, 2.5], fov: 38 }}
           gl={{ antialias: true, alpha: true }}
         >
-          <SceneContent dragRef={dragRef} />
+          <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
         </Canvas>
         {/* Ambient glow */}
         <div
@@ -239,6 +270,51 @@ export default function WebShowcase() {
           </div>
         </motion.div>
       </div>
+
+      {/* ── Mobile: "tilt to explore" hint ── */}
+      {isMobile && (
+        <AnimatePresence>
+          {showHint && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none whitespace-nowrap"
+            >
+              <p className="text-xs font-mono tracking-widest text-white/40 uppercase flex items-center gap-2">
+                <span>↕</span> tilt to explore
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* ── iOS: "Enable motion" permission pill ── */}
+      {isMobile && needsPermission && !permissionGranted && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 1 }}
+          onClick={requestIOSPermission}
+          className="absolute bottom-8 right-6 z-30"
+          style={{
+            background: 'rgba(184,92,42,0.15)',
+            border: '1px solid rgba(184,92,42,0.4)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderRadius: '999px',
+            padding: '6px 14px',
+            color: '#B85C2A',
+            fontSize: '11px',
+            fontFamily: 'DM Mono, monospace',
+            letterSpacing: '0.1em',
+            cursor: 'pointer',
+          }}
+        >
+          Enable motion
+        </motion.button>
+      )}
     </section>
   );
 }

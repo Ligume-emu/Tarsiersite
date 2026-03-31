@@ -128,3 +128,21 @@ spline-viewer::part(logo),
 .spline-watermark {
   display: none !important;
 }
+
+/* ── Mobile: dvh snap fixes ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .snap-container {
+    height: 100dvh;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .snap-container > section,
+  .snap-container > footer {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    overflow: auto;
+  }
+}
