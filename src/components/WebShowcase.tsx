@@ -3,7 +3,8 @@ import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import { useDeviceControls, type DeviceRotation } from '@/hooks/useDeviceControls';
+import { type DeviceRotation } from '@/hooks/useDeviceControls';
+import { useDeviceControlsContext } from '@/contexts/DeviceControlsContext';
 import clientVideo from '@/assets/NPSSITE.mov';
 const iphoneModel = '/models/IPHONE17.glb';
 
@@ -152,8 +153,7 @@ export default function WebShowcase() {
   const inView = useInView(sectionRef, { once: false, amount: 0.3 });
   const dragRef = useRef<DragState>({ rotX: -0.12, rotY: 0.15, isDragging: false, lastX: 0, lastY: 0 });
 
-  const { isMobile, needsPermission, permissionGranted, requestIOSPermission, deviceRotRef } =
-    useDeviceControls();
+  const { isMobile, deviceRotRef } = useDeviceControlsContext();
 
   const [showHint, setShowHint] = useState(true);
   useEffect(() => {
@@ -290,31 +290,6 @@ export default function WebShowcase() {
         </AnimatePresence>
       )}
 
-      {/* ── iOS: "Enable motion" permission pill ── */}
-      {isMobile && needsPermission && !permissionGranted && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 1 }}
-          onClick={requestIOSPermission}
-          className="absolute bottom-8 right-6 z-30"
-          style={{
-            background: 'rgba(184,92,42,0.15)',
-            border: '1px solid rgba(184,92,42,0.4)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            borderRadius: '999px',
-            padding: '6px 14px',
-            color: '#B85C2A',
-            fontSize: '11px',
-            fontFamily: 'DM Mono, monospace',
-            letterSpacing: '0.1em',
-            cursor: 'pointer',
-          }}
-        >
-          Enable motion
-        </motion.button>
-      )}
     </section>
   );
 }

@@ -133,7 +133,14 @@ spline-viewer::part(logo),
 @media (max-width: 768px) {
   .snap-container {
     height: 100dvh;
-    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .snap-container::-webkit-scrollbar {
+    display: none;
   }
 
   .snap-container > section,
@@ -143,6 +150,6 @@ spline-viewer::part(logo),
     max-height: 100dvh !important;
     scroll-snap-align: start;
     scroll-snap-stop: always;
-    overflow: auto;
+    overflow: hidden;
   }
 }
