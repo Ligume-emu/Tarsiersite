@@ -119,7 +119,7 @@ export default function MacBookShowcase() {
   return (
     <Canvas
       style={{ width: '100%', height: '100%' }}
-      camera={{ position: [0, 0.2, 0.3], fov: 60 }}
+      camera={{ position: [0, 0.1, 0.45], fov: 65 }}
       gl={{ antialias: true, alpha: true }}
     >
       <ambientLight intensity={0.4} />
