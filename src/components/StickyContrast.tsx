@@ -40,10 +40,10 @@ const StickyContrast = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative flex items-center min-h-[700px]"
+      className="relative flex items-center h-[700px]"
       style={{ backgroundColor: '#F8F7F4' }}
     >
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full h-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
         {/* Left — AnimatePresence statement cycling + Progress dots */}
         <div className="relative flex flex-col w-[50%]">
@@ -101,7 +101,7 @@ const StickyContrast = () => {
 
         {/* Right — MacBook 3D (slam dunk from right), desktop only */}
         <motion.div
-          className="hidden lg:flex items-center justify-center relative"
+          className="hidden lg:flex items-center justify-center relative h-full"
           initial={{ x: '120%' }}
           animate={{ x: inView ? '0%' : '120%' }}
           transition={{ type: 'spring', stiffness: 60, damping: 18 }}

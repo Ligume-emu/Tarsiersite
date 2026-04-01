@@ -205,7 +205,7 @@ export default function WebShowcase() {
 
         {/* Left — iPhone 3D (slam dunk from left) */}
         <motion.div
-          className="relative w-full flex items-center justify-center"
+          className="relative w-full h-full flex items-center justify-center"
           initial={{ x: '-120%' }}
           animate={{ x: inView ? '0%' : '-120%' }}
           transition={{ type: 'spring', stiffness: 60, damping: 18 }}
