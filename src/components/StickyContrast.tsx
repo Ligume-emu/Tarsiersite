@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import tarsierMascot from '@/assets/tarsier-mascot.png';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import MacBookShowcase from '@/components/MacBookShowcase';
 
 const statements = [
   {
@@ -27,6 +27,8 @@ const INTERVAL_MS = 4000;
 
 const StickyContrast = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const sectionRef = useRef(null);
+  const inView = useInView(sectionRef, { once: false, amount: 0.3 });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -37,7 +39,8 @@ const StickyContrast = () => {
 
   return (
     <section
-      className="relative flex items-center"
+      ref={sectionRef}
+      className="relative flex items-center overflow-hidden"
       style={{ backgroundColor: 'hsl(var(--bg-dark))' }}
     >
       <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -76,17 +79,17 @@ const StickyContrast = () => {
           </AnimatePresence>
         </div>
 
-        {/* Right — mascot + clickable dots */}
-        <div className="hidden lg:flex items-center justify-center">
-          <div className="relative w-[320px] h-[320px] flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full bg-tarsier/5 blur-3xl" />
-            <img
-              src={tarsierMascot}
-              alt="Tarsier"
-              className="w-[240px] h-auto object-contain opacity-20 hover:opacity-30 transition-opacity duration-700"
-            />
-            {/* Clickable progress dots */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-3">
+        {/* Right — MacBook 3D (slam dunk from right), desktop only */}
+        <motion.div
+          className="hidden lg:flex items-center justify-center"
+          initial={{ x: '120%' }}
+          animate={{ x: inView ? '0%' : '120%' }}
+          transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+        >
+          <div className="relative w-[520px] h-[360px]">
+            <MacBookShowcase />
+            {/* Progress dots */}
+            <div className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 flex gap-3">
               {statements.map((_, i) => (
                 <button
                   key={i}
@@ -102,7 +105,7 @@ const StickyContrast = () => {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Mobile dots */}
         <div className="lg:hidden flex justify-center gap-3 -mt-4">

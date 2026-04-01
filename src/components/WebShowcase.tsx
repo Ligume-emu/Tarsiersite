@@ -85,7 +85,6 @@ function IPhoneWithVideo({
         });
         (mesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
         video.play();
-        console.log('Video texture applied to HkNSnYzBPABcqwM001');
       }, { once: true });
 
       video.play().catch(() => {});
@@ -96,7 +95,6 @@ function IPhoneWithVideo({
     if (!groupRef.current) return;
 
     if (isMobile) {
-      // Auto-rotate base + device tilt/touch offset
       currentRotY.current += 0.003;
       groupRef.current.rotation.y = currentRotY.current + deviceRotRef.current.y;
       groupRef.current.rotation.x = -0.12 + deviceRotRef.current.x;
@@ -189,78 +187,71 @@ export default function WebShowcase() {
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-[#0A0806]"
-      style={{ cursor: isMobile ? 'default' : 'grab' }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
     >
-      {/* ── Full-bleed 3D canvas — position: absolute, inset: 0 ── */}
-      <div className="absolute inset-0">
-        <Starfield />
-        <Canvas
-          style={{ width: '100%', height: '100%' }}
-          camera={{ position: [0, 0, 2.5], fov: 38 }}
-          gl={{ antialias: true, alpha: true }}
-        >
-          <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
-        </Canvas>
-        {/* Ambient glow */}
-        <div
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none"
-          style={{
-            width: '600px',
-            height: '200px',
-            background: 'radial-gradient(ellipse, rgba(184,92,42,0.15) 0%, transparent 70%)',
-            filter: 'blur(32px)',
-          }}
-        />
-      </div>
+      <Starfield />
 
-      {/* ── Text overlay — relative z-10, pointer-events-none ── */}
+      {/* Ambient glow */}
       <div
-        className="relative z-10 pointer-events-none flex flex-col justify-between px-8 md:px-14 py-12"
-        style={{ height: '100%' }}
-      >
-        {/* Top: label + heading */}
-        <div>
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="font-mono text-xs tracking-[0.2em] uppercase text-[#B85C2A] mb-4"
-          >
-            What We Build
-          </motion.p>
+        className="absolute bottom-0 left-1/4 -translate-x-1/2 pointer-events-none"
+        style={{
+          width: '500px',
+          height: '300px',
+          background: 'radial-gradient(ellipse, rgba(184,92,42,0.12) 0%, transparent 70%)',
+          filter: 'blur(40px)',
+        }}
+      />
 
-          <motion.h2
-            initial={{ opacity: 0, y: 24 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="leading-[1.05]"
+      <div className="relative z-10 max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center h-full">
+
+        {/* Left — iPhone 3D (slam dunk from left) */}
+        <motion.div
+          className="flex items-center justify-center"
+          initial={{ x: '-120%' }}
+          animate={{ x: inView ? '0%' : '-120%' }}
+          transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+          style={{ cursor: isMobile ? 'default' : 'grab' }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+        >
+          <div className="w-full h-[320px] lg:h-[480px]">
+            <Canvas
+              style={{ width: '100%', height: '100%' }}
+              camera={{ position: [0, 0, 2.5], fov: 38 }}
+              gl={{ antialias: true, alpha: true }}
+            >
+              <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
+            </Canvas>
+          </div>
+        </motion.div>
+
+        {/* Right — Text (fade in) */}
+        <motion.div
+          className="flex flex-col justify-center pb-10 lg:pb-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: inView ? 1 : 0 }}
+          transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <p className="font-mono text-xs tracking-[0.2em] uppercase text-[#B85C2A] mb-4">
+            What We Build
+          </p>
+
+          <h2
+            className="leading-[1.05] mb-6"
             style={{
               fontFamily: 'Cormorant Garamond, serif',
-              fontSize: 'clamp(2rem, 5vw, 4rem)',
+              fontSize: 'clamp(2rem, 4.5vw, 3.6rem)',
               color: '#F7F4F1',
             }}
           >
             Websites that carry<br />the weight of a brand.
-          </motion.h2>
-        </div>
+          </h2>
 
-        {/* Bottom: meta row */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.7, delay: 0.5 }}
-          className="flex flex-wrap items-end justify-between gap-4"
-        >
-          <div>
-            <p className="text-white/40 text-xs font-mono mb-1">Client Work — 2025</p>
-            <p style={{ fontFamily: 'Cormorant Garamond, serif', color: '#F7F4F1', fontSize: '1.1rem' }}>
-              Premium real estate platform for a Philippine property brand.
-            </p>
-          </div>
+          <p className="text-white/40 text-xs font-mono mb-1">Client Work — 2025</p>
+          <p style={{ fontFamily: 'Cormorant Garamond, serif', color: '#F7F4F1', fontSize: '1.1rem' }} className="mb-6">
+            Premium real estate platform for a Philippine property brand.
+          </p>
           <div className="flex gap-2 flex-wrap">
             {['Web Design', 'Development', 'Framer'].map((tag) => (
               <span key={tag} className="text-xs font-mono px-3 py-1 border border-white/20 text-white/50 rounded-full">
@@ -269,9 +260,10 @@ export default function WebShowcase() {
             ))}
           </div>
         </motion.div>
+
       </div>
 
-      {/* ── Mobile: "tilt to explore" hint ── */}
+      {/* Mobile: "tilt to explore" hint */}
       {isMobile && (
         <AnimatePresence>
           {showHint && (
