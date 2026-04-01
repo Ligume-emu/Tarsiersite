@@ -1,6 +1,5 @@
 import { useRef, useEffect, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { Canvas, useFrame, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import macbookVideo from '@/assets/macbook-demo.mp4';
 
@@ -13,7 +12,7 @@ function MacBookModel() {
   const textureRef = useRef<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
-    // Log all mesh names to identify the screen mesh
+    // Log ALL mesh names to console first
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (mesh.isMesh) {
@@ -21,14 +20,13 @@ function MacBookModel() {
       }
     });
 
-    // Apply video texture to the screen mesh
+    // Apply video texture to the screen mesh (Object_107 based on earlier Blender inspection)
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
       if (!mesh.isMesh) return;
 
-      const name = mesh.name.toLowerCase();
-      const isScreen = name.includes('screen') || name.includes('display') || name.includes('glass') || name.includes('monitor');
-      if (!isScreen) return;
+      // Target the screen mesh specifically (Object_107 based on earlier Blender inspection)
+      if (mesh.name !== 'Object_107') return;
 
       const video = document.createElement('video');
       video.src = macbookVideo;
@@ -59,6 +57,41 @@ function MacBookModel() {
       }, { once: true });
 
       video.play().catch(() => {});
+
+      // If UV check fails (black screen), generate flat UVs from position bounds
+      // This is a simplified approach - in practice you'd check if the texture appears correctly
+      // and generate UVs if needed, but we'll implement the basic UV generation as fallback
+      const geometry = mesh.geometry;
+      if (geometry.isBufferGeometry) {
+        const position = geometry.attributes.position;
+        if (position) {
+          const uvs = new Float32Array(position.count * 2);
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+          // Find bounds
+          for (let i = 0; i < position.count; i++) {
+            const x = position.getX(i);
+            const y = position.getY(i);
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+
+          const rangeX = maxX - minX;
+          const rangeY = maxY - minY;
+
+          // Generate UVs from position bounds
+          for (let i = 0; i < position.count; i++) {
+            const x = position.getX(i);
+            const y = position.getY(i);
+            uvs[i * 2] = (x - minX) / rangeX;
+            uvs[i * 2 + 1] = (y - minY) / rangeY;
+          }
+
+          geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        }
+      }
     });
   }, [scene]);
 
@@ -85,13 +118,20 @@ export default function MacBookShowcase() {
   return (
     <Canvas
       style={{ width: '100%', height: '100%' }}
-      camera={{ position: [0, 0.2, 1.5], fov: 54 }}
+      camera={{ position: [0, 0.2, 0.8], fov: 60 }}
       gl={{ antialias: true, alpha: true }}
     >
       <ambientLight intensity={0.4} />
       <directionalLight position={[3, 5, 4]} intensity={1.4} castShadow />
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
       <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
+      <OrbitControls
+        enableZoom={false}
+        enablePan={false}
+        autoRotate={true}
+        autoRotateSpeed={1.5}
+        enableDamping={true}
+      />
       <Suspense fallback={null}>
         <MacBookModel />
       </Suspense>

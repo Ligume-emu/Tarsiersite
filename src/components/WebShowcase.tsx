@@ -186,7 +186,7 @@ export default function WebShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#0A0806]"
+      className="relative overflow-visible bg-[#0A0806]"
     >
       <Starfield />
 
@@ -215,10 +215,10 @@ export default function WebShowcase() {
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          <div className="w-full h-[380px] lg:h-[560px]">
+          <div className="w-full min-h-[100vh]">
             <Canvas
               style={{ width: '100%', height: '100%' }}
-              camera={{ position: [0, 0, 1.9], fov: 46 }}
+              camera={{ position: [0, 0, 1.2], fov: 55 }}
               gl={{ antialias: true, alpha: true }}
             >
               <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
