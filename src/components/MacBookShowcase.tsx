@@ -1,5 +1,6 @@
 import { useRef, useEffect, Suspense } from 'react';
-import { Canvas, useFrame, OrbitControls } from '@react-three/drei';
+import { Canvas, useFrame, RootState } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import macbookVideo from '@/assets/macbook-demo.mp4';
 
@@ -13,7 +14,7 @@ function MacBookModel() {
 
   useEffect(() => {
     // Log ALL mesh names to console first
-    scene.traverse((child) => {
+    scene.traverse((child: THREE.Object3D) => {
       const mesh = child as THREE.Mesh;
       if (mesh.isMesh) {
         console.log('[MacBook mesh]', mesh.name);
@@ -21,7 +22,7 @@ function MacBookModel() {
     });
 
     // Apply video texture to the screen mesh (Object_107 based on earlier Blender inspection)
-    scene.traverse((child) => {
+    scene.traverse((child: THREE.Object3D) => {
       const mesh = child as THREE.Mesh;
       if (!mesh.isMesh) return;
 
@@ -95,7 +96,7 @@ function MacBookModel() {
     });
   }, [scene]);
 
-  useFrame((state) => {
+  useFrame((state: RootState) => {
     if (!groupRef.current) return;
     rotY.current += 0.003;
     groupRef.current.rotation.y = rotY.current;
