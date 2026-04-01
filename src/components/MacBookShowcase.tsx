@@ -130,7 +130,7 @@ export default function MacBookShowcase() {
         enableZoom={false}
         enablePan={false}
         autoRotate={true}
-        autoRotateSpeed={3.0}
+        autoRotateSpeed={2.0}
         enableDamping={true}
       />
       <Suspense fallback={null}>

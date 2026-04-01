@@ -218,7 +218,7 @@ export default function WebShowcase() {
           <div className="w-full h-[100vh]">
             <Canvas
               style={{ width: '100%', height: '100%' }}
-              camera={{ position: [0, 0, 1.2], fov: 55 }}
+              camera={{ position: [0, 0, 1.8], fov: 55 }}
               gl={{ antialias: true, alpha: true }}
             >
               <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
