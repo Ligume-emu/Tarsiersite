@@ -1,6 +1,6 @@
 import { useRef, useEffect, Suspense } from 'react';
 import { Canvas, useFrame, RootState } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
+import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import macbookVideo from '@/assets/macbook-demo.mp4';
 
@@ -126,13 +126,6 @@ export default function MacBookShowcase() {
       <directionalLight position={[3, 5, 4]} intensity={1.4} castShadow />
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
       <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        autoRotate={true}
-        autoRotateSpeed={1.2}
-        enableDamping={true}
-      />
       <Suspense fallback={null}>
         <MacBookModel />
       </Suspense>
