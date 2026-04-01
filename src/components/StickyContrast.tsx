@@ -40,7 +40,7 @@ const StickyContrast = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative flex items-center overflow-hidden min-h-[700px]"
+      className="relative flex items-center min-h-[700px]"
       style={{ backgroundColor: '#F8F7F4' }}
     >
       <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -101,14 +101,12 @@ const StickyContrast = () => {
 
         {/* Right — MacBook 3D (slam dunk from right), desktop only */}
         <motion.div
-          className="hidden lg:flex items-center justify-center"
+          className="hidden lg:flex items-center justify-center relative"
           initial={{ x: '120%' }}
           animate={{ x: inView ? '0%' : '120%' }}
           transition={{ type: 'spring', stiffness: 60, damping: 18 }}
         >
-          <div className="relative w-full" style={{ height: '600px' }}>
-            <MacBookShowcase />
-          </div>
+          <MacBookShowcase className="absolute inset-0 w-full h-full" />
         </motion.div>
 
       </div>

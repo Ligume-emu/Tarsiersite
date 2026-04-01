@@ -186,7 +186,7 @@ export default function WebShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#0A0806] h-[100vh]"
+      className="relative bg-[#0A0806] h-[100vh]"
     >
       <Starfield />
 
@@ -205,7 +205,7 @@ export default function WebShowcase() {
 
         {/* Left — iPhone 3D (slam dunk from left) */}
         <motion.div
-          className="flex items-center justify-center"
+          className="relative w-full flex items-center justify-center"
           initial={{ x: '-120%' }}
           animate={{ x: inView ? '0%' : '-120%' }}
           transition={{ type: 'spring', stiffness: 60, damping: 18 }}
@@ -215,15 +215,14 @@ export default function WebShowcase() {
           onPointerUp={handlePointerUp}
           onPointerLeave={handlePointerUp}
         >
-          <div className="w-full h-[100vh]">
-            <Canvas
-              style={{ width: '100%', height: '100%' }}
-              camera={{ position: [0, 0, 1.8], fov: 55 }}
-              gl={{ antialias: true, alpha: true }}
-            >
-              <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
-            </Canvas>
-          </div>
+          <Canvas
+            className="absolute inset-0 w-full h-full"
+            style={{ width: '100%', height: '100%' }}
+            camera={{ position: [0, 0, 1.8], fov: 55 }}
+            gl={{ antialias: true, alpha: true }}
+          >
+            <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
+          </Canvas>
         </motion.div>
 
         {/* Right — Text (fade in) */}
