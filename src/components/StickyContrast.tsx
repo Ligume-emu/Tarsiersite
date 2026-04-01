@@ -40,7 +40,7 @@ const StickyContrast = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative flex items-center h-[700px]"
+      className="relative flex items-center h-[100vh]"
       style={{ backgroundColor: '#F8F7F4' }}
     >
       <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full h-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">

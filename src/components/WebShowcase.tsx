@@ -186,7 +186,7 @@ export default function WebShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="relative bg-[#0A0806] h-[100vh]"
+      className="relative bg-[#0A0806] h-screen"
     >
       <Starfield />
 
