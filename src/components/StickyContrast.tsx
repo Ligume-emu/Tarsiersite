@@ -106,8 +106,10 @@ const StickyContrast = () => {
           animate={{ x: inView ? '0%' : '120%' }}
           transition={{ type: 'spring', stiffness: 60, damping: 18 }}
         >
-          <div className="absolute inset-0 w-full h-full">
-            <MacBookShowcase />
+          <div className="relative w-full h-full overflow-hidden">
+            <div className="absolute inset-0 w-full h-full">
+              <MacBookShowcase />
+            </div>
           </div>
         </motion.div>
 

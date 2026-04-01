@@ -227,7 +227,7 @@ export default function WebShowcase() {
 
         {/* Right — Text (fade in) */}
         <motion.div
-          className="flex flex-col justify-center pb-10 lg:pb-0"
+          className="relative w-full h-full overflow-hidden flex flex-col justify-center pb-10 lg:pb-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: inView ? 1 : 0 }}
           transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
