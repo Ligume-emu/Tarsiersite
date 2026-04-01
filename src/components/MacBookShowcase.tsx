@@ -119,7 +119,7 @@ export default function MacBookShowcase() {
   return (
     <Canvas
       style={{ width: '100%', height: '100%' }}
-      camera={{ position: [0, 0.2, 0.5], fov: 60 }}
+      camera={{ position: [0, 0.2, 0.3], fov: 60 }}
       gl={{ antialias: true, alpha: true }}
     >
       <ambientLight intensity={0.4} />
@@ -130,7 +130,7 @@ export default function MacBookShowcase() {
         enableZoom={false}
         enablePan={false}
         autoRotate={true}
-        autoRotateSpeed={2.0}
+        autoRotateSpeed={1.2}
         enableDamping={true}
       />
       <Suspense fallback={null}>

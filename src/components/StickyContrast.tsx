@@ -82,7 +82,7 @@ const StickyContrast = () => {
           </div>
 
           {/* Progress dots */}
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center gap-3 mt-8">
             {statements.map((_, i) => (
               <button
                 key={i}
