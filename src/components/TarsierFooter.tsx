@@ -1,5 +1,4 @@
 import tarsierLogo from "@/assets/tarsier-logo.png";
-import tarsierFull from "@/assets/tarsier-full-illustration.png";
 
 const socials = [
   { label: "X", href: "https://twitter.com/tarsiertechnologies", path: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" },
@@ -9,53 +8,91 @@ const socials = [
 ];
 
 const TarsierFooter = () => (
-  <footer id="contact" className="bg-[#F8F7F4] relative overflow-hidden flex flex-col justify-center">
-    <img src={tarsierFull} alt="" className="absolute left-1/2 -translate-x-1/2 bottom-0 w-[300px] lg:w-[400px] opacity-[0.03] pointer-events-none" />
-    <div className="max-w-[1280px] mx-auto px-6 text-center relative z-10 py-10">
-      <h2 className="font-display text-[48px] lg:text-[64px] font-semibold text-text-primary mb-4 leading-tight">
-        Let's build something together.
-      </h2>
-      <p className="font-body text-[17px] text-text-secondary max-w-[560px] mx-auto mb-10 leading-relaxed">
-        Whether you're a business ready to scale or a developer ready to grow — TARSIER has a door open for you.
-      </p>
-      <div className="flex flex-wrap justify-center gap-4 mb-12">
-        <a href="mailto:hello@tarsiertech.ph" className="px-8 py-3.5 rounded-full bg-tarsier text-primary-foreground font-body text-[15px] font-medium hover:bg-[#9A4A20] transition-colors">
-          Start a Project
-        </a>
-        <a href="/scholars" className="px-8 py-3.5 rounded-full border-2 border-tarsier text-tarsier font-body text-[15px] font-medium hover:bg-tarsier hover:text-primary-foreground transition-colors">
-          Apply for Scholars
-        </a>
-      </div>
-      <div className="flex justify-center gap-4 mb-12">
-        {socials.map((s) => (
-          <a key={s.label} href={s.href} aria-label={s.label} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center rounded-full text-tarsier-light hover:text-tarsier transition-colors">
-            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d={s.path} /></svg>
-          </a>
-        ))}
-      </div>
-<div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-2">
-          <img src={tarsierLogo} alt="Tarsier" className="w-8 h-8 object-contain" />
-          <span className="font-display text-base font-bold text-tarsier">TARSIER</span>
-        </div>
+  <footer id="contact" className="bg-[#0D0D0D] relative overflow-hidden flex flex-col justify-center">
 
-        {/* Subpage links */}
-        <div className="flex items-center gap-6">
-          <a href="/services" className="font-mono text-[11px] text-text-primary/40 hover:text-tarsier transition-colors">
-            Services
-          </a>
-          <a href="/scholars" className="font-mono text-[11px] text-text-primary/40 hover:text-tarsier transition-colors">
-            Scholars
-          </a>
-          <a href="/careers" className="font-mono text-[11px] text-text-primary/40 hover:text-tarsier transition-colors">
-            Careers
+    <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full relative z-10">
+
+      {/* Three-column grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16 py-16 lg:py-20">
+
+        {/* Left — Logo + tagline + CTA */}
+        <div>
+          <div className="flex items-center gap-2 mb-5">
+            <img src={tarsierLogo} alt="Tarsier" className="w-8 h-8 object-contain" />
+            <span className="font-display text-base font-bold text-tarsier tracking-wide">TARSIER</span>
+          </div>
+          <p className="font-body text-[14px] text-white/50 leading-relaxed mb-8 max-w-[260px]">
+            Filipino-built. Globally trusted. Systems that work while you sleep.
+          </p>
+          <a
+            href="mailto:hello@tarsiertech.ph"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-tarsier text-primary-foreground font-body text-[13px] font-medium hover:bg-[#9A4A20] transition-colors"
+          >
+            Start a Project →
           </a>
         </div>
 
-        <span className="font-mono text-[11px] text-text-primary/50">
+        {/* Center — Navigation */}
+        <div className="lg:flex lg:justify-center">
+          <div>
+            <span className="font-mono text-[10px] text-white/30 uppercase tracking-[0.18em] mb-6 block">
+              Navigate
+            </span>
+            <div className="flex flex-col gap-4">
+              {[
+                { label: 'Services', href: '/services' },
+                { label: 'Scholars', href: '/scholars' },
+                { label: 'Careers', href: '/careers' },
+              ].map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="font-body text-[15px] text-white/55 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right — Socials */}
+        <div className="lg:flex lg:justify-end">
+          <div>
+            <span className="font-mono text-[10px] text-white/30 uppercase tracking-[0.18em] mb-6 block">
+              Follow
+            </span>
+            <div className="flex flex-col gap-4">
+              {socials.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 font-body text-[15px] text-white/55 hover:text-white transition-colors group"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                    <path d={s.path} />
+                  </svg>
+                  {s.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom bar */}
+      <div className="border-t border-white/[0.08] py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <span className="font-mono text-[11px] text-white/30">
           © 2026 Tarsier Global Technologies Corporation
         </span>
+        <a href="/privacy" className="font-mono text-[11px] text-white/30 hover:text-white/60 transition-colors">
+          Privacy Policy
+        </a>
       </div>
+
     </div>
   </footer>
 );

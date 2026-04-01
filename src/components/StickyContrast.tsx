@@ -86,7 +86,7 @@ const StickyContrast = () => {
           animate={{ x: inView ? '0%' : '120%' }}
           transition={{ type: 'spring', stiffness: 60, damping: 18 }}
         >
-          <div className="relative w-[520px] h-[360px]">
+          <div className="relative w-[600px] h-[440px]">
             <MacBookShowcase />
             {/* Progress dots */}
             <div className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 flex gap-3">
