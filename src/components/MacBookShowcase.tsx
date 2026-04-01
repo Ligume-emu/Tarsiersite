@@ -117,25 +117,27 @@ function MacBookModel() {
 
 export default function MacBookShowcase() {
   return (
-    <Canvas
-      style={{ width: '100%', height: '100%' }}
-      camera={{ position: [0, 0.1, 0.45], fov: 65 }}
-      gl={{ antialias: true, alpha: true }}
-    >
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[3, 5, 4]} intensity={1.4} castShadow />
-      <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
-      <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        autoRotate={true}
-        autoRotateSpeed={1.2}
-        enableDamping={true}
-      />
-      <Suspense fallback={null}>
-        <MacBookModel />
-      </Suspense>
-    </Canvas>
+    <div className="w-full h-full">
+      <Canvas
+        style={{ width: '100%', height: '100%' }}
+        camera={{ position: [0, 0.1, 0.35], fov: 65 }}
+        gl={{ antialias: true, alpha: true }}
+      >
+        <ambientLight intensity={0.4} />
+        <directionalLight position={[3, 5, 4]} intensity={1.4} castShadow />
+        <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
+        <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
+        <OrbitControls
+          enableZoom={false}
+          enablePan={false}
+          autoRotate={true}
+          autoRotateSpeed={1.2}
+          enableDamping={true}
+        />
+        <Suspense fallback={null}>
+          <MacBookModel />
+        </Suspense>
+      </Canvas>
+    </div>
   );
 }
