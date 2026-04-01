@@ -186,10 +186,8 @@ export default function WebShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#0A0806]"
+      className="relative overflow-hidden bg-[#F8F7F4]"
     >
-      <Starfield />
-
       {/* Ambient glow */}
       <div
         className="absolute bottom-0 left-1/4 -translate-x-1/2 pointer-events-none"
@@ -242,19 +240,19 @@ export default function WebShowcase() {
             style={{
               fontFamily: 'Cormorant Garamond, serif',
               fontSize: 'clamp(2rem, 4.5vw, 3.6rem)',
-              color: '#F7F4F1',
+              color: '#1a1814',
             }}
           >
             Websites that carry<br />the weight of a brand.
           </h2>
 
-          <p className="text-white/40 text-xs font-mono mb-1">Client Work — 2025</p>
-          <p style={{ fontFamily: 'Cormorant Garamond, serif', color: '#F7F4F1', fontSize: '1.1rem' }} className="mb-6">
+          <p className="text-neutral-900/40 text-xs font-mono mb-1">Client Work — 2025</p>
+          <p style={{ fontFamily: 'Cormorant Garamond, serif', color: '#1a1814', fontSize: '1.1rem' }} className="mb-6">
             Premium real estate platform for a Philippine property brand.
           </p>
           <div className="flex gap-2 flex-wrap">
             {['Web Design', 'Development', 'Framer'].map((tag) => (
-              <span key={tag} className="text-xs font-mono px-3 py-1 border border-white/20 text-white/50 rounded-full">
+              <span key={tag} className="text-xs font-mono px-3 py-1 border border-neutral-900/20 text-neutral-900/50 rounded-full">
                 {tag}
               </span>
             ))}
@@ -274,7 +272,7 @@ export default function WebShowcase() {
               transition={{ duration: 0.5, delay: 0.8 }}
               className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 pointer-events-none whitespace-nowrap"
             >
-              <p className="text-xs font-mono tracking-widest text-white/40 uppercase flex items-center gap-2">
+              <p className="text-xs font-mono tracking-widest text-neutral-900/40 uppercase flex items-center gap-2">
                 <span>↕</span> tilt to explore
               </p>
             </motion.div>

@@ -41,7 +41,7 @@ const StickyContrast = () => {
     <section
       ref={sectionRef}
       className="relative flex items-center overflow-hidden"
-      style={{ backgroundColor: 'hsl(var(--bg-dark))' }}
+      style={{ backgroundColor: '#F8F7F4' }}
     >
       <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
@@ -58,10 +58,10 @@ const StickyContrast = () => {
             >
               {/* Them */}
               <div className="mb-7">
-                <span className="font-mono text-[10px] text-text-on-dark/30 uppercase tracking-[0.16em] mb-3 block">
+                <span className="font-mono text-[10px] text-neutral-900/30 uppercase tracking-[0.16em] mb-3 block">
                   {statements[activeIndex].label}
                 </span>
-                <p className="font-body text-[16px] text-text-on-dark/40 leading-relaxed line-through decoration-tarsier/40">
+                <p className="font-body text-[16px] text-neutral-900/40 leading-relaxed line-through decoration-tarsier/40">
                   {statements[activeIndex].them}
                 </p>
               </div>
@@ -71,7 +71,7 @@ const StickyContrast = () => {
                 <span className="font-mono text-[10px] text-tarsier uppercase tracking-[0.16em] mb-3 block">
                   {statements[activeIndex].usLabel}
                 </span>
-                <p className="font-display text-[26px] lg:text-[32px] font-semibold text-text-on-dark leading-tight">
+                <p className="font-display text-[26px] lg:text-[32px] font-semibold text-neutral-900 leading-tight">
                   {statements[activeIndex].us}
                 </p>
               </div>

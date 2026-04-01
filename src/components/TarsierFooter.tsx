@@ -9,13 +9,13 @@ const socials = [
 ];
 
 const TarsierFooter = () => (
-  <footer id="contact" className="bg-[#0A0806] relative overflow-hidden flex flex-col justify-center">
+  <footer id="contact" className="bg-[#F8F7F4] relative overflow-hidden flex flex-col justify-center">
     <img src={tarsierFull} alt="" className="absolute left-1/2 -translate-x-1/2 bottom-0 w-[300px] lg:w-[400px] opacity-[0.03] pointer-events-none" />
     <div className="max-w-[1280px] mx-auto px-6 text-center relative z-10 py-10">
-      <h2 className="font-display text-[48px] lg:text-[64px] font-semibold text-text-on-dark mb-4 leading-tight">
+      <h2 className="font-display text-[48px] lg:text-[64px] font-semibold text-text-primary mb-4 leading-tight">
         Let's build something together.
       </h2>
-      <p className="font-body text-[17px] text-text-on-dark/60 max-w-[560px] mx-auto mb-10 leading-relaxed">
+      <p className="font-body text-[17px] text-text-secondary max-w-[560px] mx-auto mb-10 leading-relaxed">
         Whether you're a business ready to scale or a developer ready to grow — TARSIER has a door open for you.
       </p>
       <div className="flex flex-wrap justify-center gap-4 mb-12">
@@ -28,7 +28,7 @@ const TarsierFooter = () => (
       </div>
       <div className="flex justify-center gap-4 mb-12">
         {socials.map((s) => (
-          <a key={s.label} href={s.href} aria-label={s.label} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center rounded-full text-tarsier-light hover:text-primary-foreground transition-colors">
+          <a key={s.label} href={s.href} aria-label={s.label} target="_blank" rel="noopener noreferrer" className="w-10 h-10 flex items-center justify-center rounded-full text-tarsier-light hover:text-tarsier transition-colors">
             <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d={s.path} /></svg>
           </a>
         ))}
@@ -41,18 +41,18 @@ const TarsierFooter = () => (
 
         {/* Subpage links */}
         <div className="flex items-center gap-6">
-          <a href="/services" className="font-mono text-[11px] text-text-on-dark/40 hover:text-tarsier transition-colors">
+          <a href="/services" className="font-mono text-[11px] text-text-primary/40 hover:text-tarsier transition-colors">
             Services
           </a>
-          <a href="/scholars" className="font-mono text-[11px] text-text-on-dark/40 hover:text-tarsier transition-colors">
+          <a href="/scholars" className="font-mono text-[11px] text-text-primary/40 hover:text-tarsier transition-colors">
             Scholars
           </a>
-          <a href="/careers" className="font-mono text-[11px] text-text-on-dark/40 hover:text-tarsier transition-colors">
+          <a href="/careers" className="font-mono text-[11px] text-text-primary/40 hover:text-tarsier transition-colors">
             Careers
           </a>
         </div>
 
-        <span className="font-mono text-[11px] text-text-on-dark/50">
+        <span className="font-mono text-[11px] text-text-primary/50">
           © 2026 Tarsier Global Technologies Corporation
         </span>
       </div>
