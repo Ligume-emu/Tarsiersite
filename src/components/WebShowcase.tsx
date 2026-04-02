@@ -118,7 +118,7 @@ function IPhoneWithVideo({
       ref={groupRef}
       object={scene}
       scale={10}
-      position={[0, 0, 0]}
+      position={[-2.0, 0, 0]}
       rotation={[0, Math.PI, 0]}
     />
   );
