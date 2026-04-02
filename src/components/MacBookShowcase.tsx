@@ -6,10 +6,12 @@ import macbookVideo from '@/assets/macbook-demo.mp4';
 
 const macbookModel = '/models/MACBOOK.glb';
 
+type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: number; lastY: number };
+
 function MacBookModel() {
   const { scene } = useGLTF(macbookModel);
   const groupRef = useRef<THREE.Group>(null);
-  const rotY = useRef(0);
+  const dragRef = useRef<DragState>({ rotX: -0.18, rotY: 0, isDragging: false, lastX: 0, lastY: 0 });
   const textureRef = useRef<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
@@ -98,11 +100,47 @@ function MacBookModel() {
 
   useFrame((state: RootState) => {
     if (!groupRef.current) return;
-    rotY.current += 0.003;
-    groupRef.current.rotation.y = rotY.current;
-    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.04;
+
+    const drag = dragRef.current;
+    if (Math.abs(drag.rotY - dragRef.current.rotY) < 0.01 && !drag.isDragging) {
+      drag.rotY += 0.003;
+    }
+
+    // Direct lerp toward target rotation instead of spring/bounce
+    dragRef.current.rotY += (drag.rotY - dragRef.current.rotY) * 0.1;
+    dragRef.current.rotX += (drag.rotX - dragRef.current.rotX) * 0.1;
+
+    groupRef.current.rotation.y = dragRef.current.rotY;
+    groupRef.current.rotation.x = dragRef.current.rotX;
+
+    // Shift model position down by -0.3 units
+    groupRef.current.position.y = -0.3;
+
     if (textureRef.current) textureRef.current.needsUpdate = true;
   });
+
+  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    dragRef.current.isDragging = true;
+    dragRef.current.lastX = e.clientX;
+    dragRef.current.lastY = e.clientY;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragRef.current.isDragging) return;
+    const dx = e.clientX - dragRef.current.lastX;
+    const dy = e.clientY - dragRef.current.lastY;
+    dragRef.current.rotY += dx * 0.008;
+    dragRef.current.rotX += dy * 0.008;
+    // Limit rotation to prevent flipping
+    dragRef.current.rotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, dragRef.current.rotX));
+    dragRef.current.lastX = e.clientX;
+    dragRef.current.lastY = e.clientY;
+  }
+
+  function handlePointerUp() {
+    dragRef.current.isDragging = false;
+  }
 
   return (
     <primitive
@@ -110,7 +148,12 @@ function MacBookModel() {
       object={scene}
       scale={1.2}
       position={[0, 0, 0]}
-      rotation={[-0.18, 0, 0]}
+      rotation={[0, Math.PI, 0]}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+      style={{ cursor: 'grab' }}
     />
   );
 }
