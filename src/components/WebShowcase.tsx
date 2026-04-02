@@ -225,7 +225,7 @@ export default function WebShowcase() {
 
       {/* Text (fade in) */}
       <motion.div
-        className="absolute top-16 right-12 z-10 max-w-md"
+        className="absolute bottom-16 left-12 z-10 max-w-sm text-left"
         initial={{ opacity: 0 }}
         animate={{ opacity: inView ? 1 : 0 }}
         transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
