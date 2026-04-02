@@ -113,8 +113,8 @@ function MacBookModel() {
     groupRef.current.rotation.y = dragRef.current.rotY;
     groupRef.current.rotation.x = dragRef.current.rotX;
 
-    // Shift model position down by -0.3 units
-    groupRef.current.position.y = -0.3;
+    // Shift model position down by -0.1 units to roughly vertical center
+    groupRef.current.position.y = -0.1;
 
     if (textureRef.current) textureRef.current.needsUpdate = true;
   });
