@@ -186,7 +186,7 @@ export default function WebShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="relative bg-[#0A0806] h-screen"
+      className="relative w-full h-screen overflow-hidden bg-[#0A0806]"
     >
       <Starfield />
 
@@ -201,66 +201,62 @@ export default function WebShowcase() {
         }}
       />
 
-      <div className="relative z-10 max-w-[1280px] mx-auto px-6 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16 items-center h-full">
-
-        {/* Left — iPhone 3D (slam dunk from left) */}
-        <motion.div
-          className="relative w-full h-full flex items-center justify-center"
-          initial={{ x: '-120%' }}
-          animate={{ x: inView ? '0%' : '-120%' }}
-          transition={{ type: 'spring', stiffness: 60, damping: 18 }}
-          style={{ cursor: isMobile ? 'default' : 'grab' }}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
+      {/* iPhone 3D (slam dunk from left) */}
+      <motion.div
+        className="hidden lg:flex items-center justify-center absolute inset-0 w-full h-full"
+        initial={{ x: '-120%' }}
+        animate={{ x: inView ? '0%' : '-120%' }}
+        transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+        style={{ cursor: isMobile ? 'default' : 'grab' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        <Canvas
+          className="absolute inset-0 w-full h-full"
+          style={{ width: '100%', height: '100%' }}
+          camera={{ position: [0, 0, 1.8], fov: 55 }}
+          gl={{ antialias: true, alpha: true }}
         >
-          <Canvas
-            className="absolute inset-0 w-full h-full"
-            style={{ width: '100%', height: '100%' }}
-            camera={{ position: [0, 0, 1.8], fov: 55 }}
-            gl={{ antialias: true, alpha: true }}
-          >
-            <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
-          </Canvas>
-        </motion.div>
+          <SceneContent dragRef={dragRef} isMobile={isMobile} deviceRotRef={deviceRotRef} />
+        </Canvas>
+      </motion.div>
 
-        {/* Right — Text (fade in) */}
-        <motion.div
-          className="relative w-full h-full overflow-hidden flex flex-col justify-center pb-10 lg:pb-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: inView ? 1 : 0 }}
-          transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      {/* Text (fade in) */}
+      <motion.div
+        className="absolute top-16 right-12 z-10 max-w-md"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: inView ? 1 : 0 }}
+        transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <p className="font-mono text-xs tracking-[0.2em] uppercase text-[#B85C2A] mb-4">
+          What We Build
+        </p>
+
+        <h2
+          className="leading-[1.05] mb-6"
+          style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: 'clamp(2rem, 4.5vw, 3.6rem)',
+            color: '#F7F4F1',
+          }}
         >
-          <p className="font-mono text-xs tracking-[0.2em] uppercase text-[#B85C2A] mb-4">
-            What We Build
-          </p>
+          Websites that carry<br />the weight of a brand.
+        </h2>
 
-          <h2
-            className="leading-[1.05] mb-6"
-            style={{
-              fontFamily: 'Cormorant Garamond, serif',
-              fontSize: 'clamp(2rem, 4.5vw, 3.6rem)',
-              color: '#F7F4F1',
-            }}
-          >
-            Websites that carry<br />the weight of a brand.
-          </h2>
-
-          <p className="text-white/40 text-xs font-mono mb-1">Client Work — 2025</p>
-          <p style={{ fontFamily: 'Cormorant Garamond, serif', color: '#F7F4F1', fontSize: '1.1rem' }} className="mb-6">
-            Premium real estate platform for a Philippine property brand.
-          </p>
-          <div className="flex gap-2 flex-wrap">
-            {['Web Design', 'Development', 'Framer'].map((tag) => (
-              <span key={tag} className="text-xs font-mono px-3 py-1 border border-white/20 text-white/50 rounded-full">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-
-      </div>
+        <p className="text-white/40 text-xs font-mono mb-1">Client Work — 2025</p>
+        <p style={{ fontFamily: 'Cormorant Garamond, serif', color: '#F7F4F1', fontSize: '1.1rem' }} className="mb-6">
+          Premium real estate platform for a Philippine property brand.
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          {['Web Design', 'Development', 'Framer'].map((tag) => (
+            <span key={tag} className="text-xs font-mono px-3 py-1 border border-white/20 text-white/50 rounded-full">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Mobile: "tilt to explore" hint */}
       {isMobile && (

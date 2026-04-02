@@ -40,79 +40,71 @@ const StickyContrast = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative flex items-center h-[100vh]"
+      className="relative w-full h-screen overflow-hidden"
       style={{ backgroundColor: '#F8F7F4' }}
     >
-      <div className="max-w-[1280px] mx-auto px-6 lg:px-12 w-full h-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      {/* MacBook 3D (slam dunk from right), desktop only */}
+      <motion.div
+        className="hidden lg:flex items-center justify-center absolute inset-0 w-full h-full"
+        initial={{ x: '120%' }}
+        animate={{ x: inView ? '0%' : '120%' }}
+        transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+      >
+        <MacBookShowcase />
+      </motion.div>
 
-        {/* Left — AnimatePresence statement cycling + Progress dots */}
-        <div className="relative flex flex-col w-[50%]">
-          {/* Statement cycling */}
-          <div className="relative h-[300px] sm:h-[260px] mb-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeIndex}
-                className="absolute inset-0 flex flex-col justify-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {/* Them */}
-                <div className="mb-7">
-                  <span className="font-mono text-[10px] text-neutral-900/30 uppercase tracking-[0.16em] mb-3 block">
-                    {statements[activeIndex].label}
-                  </span>
-                  <p className="font-body text-[16px] text-neutral-900/40 leading-relaxed line-through decoration-tarsier/40">
-                    {statements[activeIndex].them}
-                  </p>
-                </div>
+      {/* Left — AnimatePresence statement cycling + Progress dots */}
+      <div className="absolute top-16 right-12 z-10 max-w-md">
+        {/* Statement cycling */}
+        <div className="relative h-[300px] sm:h-[260px] mb-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIndex}
+              className="absolute inset-0 flex flex-col justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* Them */}
+              <div className="mb-7">
+                <span className="font-mono text-[10px] text-neutral-900/30 uppercase tracking-[0.16em] mb-3 block">
+                  {statements[activeIndex].label}
+                </span>
+                <p className="font-body text-[16px] text-neutral-900/40 leading-relaxed line-through decoration-tarsier/40">
+                  {statements[activeIndex].them}
+                </p>
+              </div>
 
-                {/* Us */}
-                <div>
-                  <span className="font-mono text-[10px] text-tarsier uppercase tracking-[0.16em] mb-3 block">
-                    {statements[activeIndex].usLabel}
-                  </span>
-                  <p className="font-display text-[26px] lg:text-[32px] font-semibold text-neutral-900 leading-tight">
-                    {statements[activeIndex].us}
-                  </p>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Progress dots */}
-          <div className="flex justify-center gap-3 mt-8">
-            {statements.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveIndex(i)}
-                aria-label={`Statement ${i + 1}`}
-                className="w-2 h-2 rounded-full transition-all duration-300"
-                style={{
-                  backgroundColor: 'hsl(var(--tarsier))',
-                  opacity: i === activeIndex ? 1 : 0.25,
-                  transform: i === activeIndex ? 'scale(1.3)' : 'scale(1)',
-                }}
-              />
-            ))}
-          </div>
+              {/* Us */}
+              <div>
+                <span className="font-mono text-[10px] text-tarsier uppercase tracking-[0.16em] mb-3 block">
+                  {statements[activeIndex].usLabel}
+                </span>
+                <p className="font-display text-[26px] lg:text-[32px] font-semibold text-neutral-900 leading-tight">
+                  {statements[activeIndex].us}
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
-        {/* Right — MacBook 3D (slam dunk from right), desktop only */}
-        <motion.div
-          className="hidden lg:flex items-center justify-center relative h-full"
-          initial={{ x: '120%' }}
-          animate={{ x: inView ? '0%' : '120%' }}
-          transition={{ type: 'spring', stiffness: 60, damping: 18 }}
-        >
-          <div className="relative w-full h-full overflow-hidden">
-            <div className="absolute inset-0 w-full h-full">
-              <MacBookShowcase />
-            </div>
-          </div>
-        </motion.div>
-
+        {/* Progress dots */}
+        <div className="flex justify-center gap-3 mt-8">
+          {statements.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              aria-label={`Statement ${i + 1}`}
+              className="w-2 h-2 rounded-full transition-all duration-300"
+              style={{
+                backgroundColor: 'hsl(var(--tarsier))',
+                opacity: i === activeIndex ? 1 : 0.25,
+                transform: i === activeIndex ? 'scale(1.3)' : 'scale(1)',
+              }}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
