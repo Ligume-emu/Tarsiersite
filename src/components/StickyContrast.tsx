@@ -64,14 +64,29 @@ const StickyContrast = () => {
       className="relative w-full h-screen overflow-hidden"
       style={{ backgroundColor: '#F8F7F4' }}
     >
-      {/* Left half — text content */}
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 px-8 sm:px-12 w-[400px]">
-        {/* AnimatePresence statement cycling */}
-        <div className="relative h-[360px] mb-6">
+      {/* MacBook 3D (slam dunk from right), desktop only */}
+      <motion.div
+        className="hidden lg:flex items-center justify-center absolute inset-0 w-full h-full"
+        initial={{ x: '120%' }}
+        animate={{ x: inView ? '0%' : '120%' }}
+        transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+        style={{ cursor: 'grab' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        <MacBookShowcase dragRef={dragRef} />
+      </motion.div>
+
+      {/* Left — AnimatePresence statement cycling + Progress dots */}
+      <div className="absolute right-12 top-1/2 -translate-y-1/2 z-10 max-w-sm">
+        {/* Statement cycling */}
+        <div className="relative h-[300px] sm:h-[260px] mb-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
-              className="absolute inset-0"
+              className="absolute inset-0 flex flex-col justify-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -101,7 +116,7 @@ const StickyContrast = () => {
         </div>
 
         {/* Progress dots */}
-        <div className="flex gap-3 mt-8">
+        <div className="flex justify-center gap-3 mt-8">
           {statements.map((_, i) => (
             <button
               key={i}
@@ -116,23 +131,6 @@ const StickyContrast = () => {
             />
           ))}
         </div>
-      </div>
-
-      {/* Right half — MacBook 3D (slam dunk from right) */}
-      <div className="absolute left-2/5 top-0 w-3/5 h-full">
-        <motion.div
-          className="hidden lg:flex items-center justify-center w-full h-full"
-          initial={{ x: '120%' }}
-          animate={{ x: inView ? '0%' : '120%' }}
-          transition={{ type: 'spring', stiffness: 60, damping: 18 }}
-          style={{ cursor: 'grab' }}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-        >
-          <MacBookShowcase dragRef={dragRef} />
-        </motion.div>
       </div>
     </section>
   );
