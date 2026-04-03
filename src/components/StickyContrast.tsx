@@ -65,7 +65,7 @@ const StickyContrast = () => {
       style={{ backgroundColor: '#F8F7F4' }}
     >
       {/* Left half — text content */}
-      <div className="absolute left-0 top-0 w-2/5 h-full z-10 flex items-center px-6">
+      <div className="absolute left-0 top-0 w-2/5 h-full z-10 flex flex-col items-start justify-center px-6">
         {/* Statement cycling */}
         <div className="relative h-[300px] sm:h-[260px] mb-6 max-w-[300px]">
           <AnimatePresence mode="wait">
