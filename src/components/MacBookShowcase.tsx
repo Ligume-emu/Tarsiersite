@@ -122,7 +122,7 @@ function MacBookModel({ dragRef }: { dragRef: React.RefObject<DragState> }) {
       ref={groupRef}
       object={scene}
       scale={1.2}
-      position={[1.2, 0, 0]}
+      position={[0, 0, 0]}
       rotation={[0, Math.PI, 0]}
     />
   );
