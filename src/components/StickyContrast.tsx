@@ -64,23 +64,8 @@ const StickyContrast = () => {
       className="relative w-full h-screen overflow-hidden"
       style={{ backgroundColor: '#F8F7F4' }}
     >
-      {/* MacBook 3D (slam dunk from right), desktop only */}
-      <motion.div
-        className="hidden lg:flex items-center justify-center absolute inset-0 w-full h-full"
-        initial={{ x: '120%' }}
-        animate={{ x: inView ? '0%' : '120%' }}
-        transition={{ type: 'spring', stiffness: 60, damping: 18 }}
-        style={{ cursor: 'grab' }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
-      >
-        <MacBookShowcase dragRef={dragRef} />
-      </motion.div>
-
-      {/* Left — AnimatePresence statement cycling + Progress dots */}
-      <div className="absolute left-8 top-1/2 -translate-y-1/2 z-10 w-[280px]">
+      {/* Left half — text content */}
+      <div className="absolute left-0 top-0 w-1/2 h-full z-10 flex items-center px-12">
         {/* Statement cycling */}
         <div className="relative h-[300px] sm:h-[260px] mb-6">
           <AnimatePresence mode="wait">
@@ -131,6 +116,23 @@ const StickyContrast = () => {
             />
           ))}
         </div>
+      </div>
+
+      {/* Right half — MacBook 3D (slam dunk from right) */}
+      <div className="absolute right-0 top-0 w-1/2 h-full">
+        <motion.div
+          className="hidden lg:flex items-center justify-center w-full h-full"
+          initial={{ x: '120%' }}
+          animate={{ x: inView ? '0%' : '120%' }}
+          transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+          style={{ cursor: 'grab' }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+        >
+          <MacBookShowcase dragRef={dragRef} />
+        </motion.div>
       </div>
     </section>
   );
