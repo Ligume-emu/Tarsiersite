@@ -147,7 +147,7 @@ function MacBookModel() {
       ref={groupRef}
       object={scene}
       scale={1.2}
-      position={[2.0, 0, 0]}
+      position={[0, 0, 0]}
       rotation={[0, Math.PI, 0]}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
