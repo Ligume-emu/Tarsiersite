@@ -8,10 +8,11 @@ const macbookModel = '/models/MACBOOK.glb';
 
 type DragState = { rotX: number; rotY: number; isDragging: boolean; lastX: number; lastY: number };
 
-function MacBookModel() {
+function MacBookModel({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   const { scene } = useGLTF(macbookModel);
   const groupRef = useRef<THREE.Group>(null);
-  const dragRef = useRef<DragState>({ rotX: -0.18, rotY: 0, isDragging: false, lastX: 0, lastY: 0 });
+  const currentRotY = useRef(0);
+  const currentRotX = useRef(-0.18);
   const textureRef = useRef<THREE.VideoTexture | null>(null);
 
   useEffect(() => {
@@ -102,16 +103,13 @@ function MacBookModel() {
     if (!groupRef.current) return;
 
     const drag = dragRef.current;
-    if (Math.abs(drag.rotY - dragRef.current.rotY) < 0.01 && !drag.isDragging) {
+    if (Math.abs(drag.rotY - currentRotY.current) < 0.01) {
       drag.rotY += 0.003;
     }
-
-    // Direct lerp toward target rotation instead of spring/bounce
-    dragRef.current.rotY += (drag.rotY - dragRef.current.rotY) * 0.1;
-    dragRef.current.rotX += (drag.rotX - dragRef.current.rotX) * 0.1;
-
-    groupRef.current.rotation.y = dragRef.current.rotY;
-    groupRef.current.rotation.x = dragRef.current.rotX;
+    currentRotY.current += (drag.rotY - currentRotY.current) * 0.1;
+    currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
+    groupRef.current.rotation.y = currentRotY.current;
+    groupRef.current.rotation.x = currentRotX.current;
 
     // Shift model position down by -0.1 units to roughly vertical center
     groupRef.current.position.y = -0.1;
@@ -119,46 +117,18 @@ function MacBookModel() {
     if (textureRef.current) textureRef.current.needsUpdate = true;
   });
 
-  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    dragRef.current.isDragging = true;
-    dragRef.current.lastX = e.clientX;
-    dragRef.current.lastY = e.clientY;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  }
-
-  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!dragRef.current.isDragging) return;
-    const dx = e.clientX - dragRef.current.lastX;
-    const dy = e.clientY - dragRef.current.lastY;
-    dragRef.current.rotY += dx * 0.008;
-    dragRef.current.rotX += dy * 0.008;
-    // Limit rotation to prevent flipping
-    dragRef.current.rotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, dragRef.current.rotX));
-    dragRef.current.lastX = e.clientX;
-    dragRef.current.lastY = e.clientY;
-  }
-
-  function handlePointerUp() {
-    dragRef.current.isDragging = false;
-  }
-
   return (
     <primitive
       ref={groupRef}
       object={scene}
       scale={1.2}
-      position={[0, 0, 0]}
+      position={[1.2, 0, 0]}
       rotation={[0, Math.PI, 0]}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
-      style={{ cursor: 'grab' }}
     />
   );
 }
 
-export default function MacBookShowcase() {
+export default function MacBookShowcase({ dragRef }: { dragRef: React.RefObject<DragState> }) {
   return (
     <Canvas
       style={{ width: '100%', height: '100%' }}
@@ -170,7 +140,7 @@ export default function MacBookShowcase() {
       <pointLight position={[-3, -2, 2]} intensity={0.5} color="#B85C2A" />
       <pointLight position={[0, -4, 1]} intensity={0.3} color="#B85C2A" />
       <Suspense fallback={null}>
-        <MacBookModel />
+        <MacBookModel dragRef={dragRef} />
       </Suspense>
     </Canvas>
   );
