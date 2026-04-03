@@ -67,7 +67,7 @@ const StickyContrast = () => {
       {/* Left half — text content */}
       <div className="absolute left-0 top-0 w-1/5 h-full z-10 flex items-center px-6">
         {/* Statement cycling */}
-        <div className="relative h-[300px] sm:h-[260px] mb-6 max-w-[220px]">
+        <div className="relative h-[300px] sm:h-[260px] mb-6 max-w-[300px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
