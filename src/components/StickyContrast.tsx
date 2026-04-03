@@ -29,6 +29,27 @@ const StickyContrast = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: false, amount: 0.3 });
+  const dragRef = useRef({ rotX: -0.18, rotY: 0, isDragging: false, lastX: 0, lastY: 0 });
+
+  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    dragRef.current.isDragging = true;
+    dragRef.current.lastX = e.clientX;
+    dragRef.current.lastY = e.clientY;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragRef.current.isDragging) return;
+    const dx = e.clientX - dragRef.current.lastX;
+    const dy = e.clientY - dragRef.current.lastY;
+    dragRef.current.rotY += dx * 0.008;
+    dragRef.current.rotX += dy * 0.008;
+    dragRef.current.rotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, dragRef.current.rotX));
+    dragRef.current.lastX = e.clientX;
+    dragRef.current.lastY = e.clientY;
+  }
+  function handlePointerUp() {
+    dragRef.current.isDragging = false;
+  }
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -49,8 +70,13 @@ const StickyContrast = () => {
         initial={{ x: '120%' }}
         animate={{ x: inView ? '0%' : '120%' }}
         transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+        style={{ cursor: 'grab' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
       >
-        <MacBookShowcase />
+        <MacBookShowcase dragRef={dragRef} />
       </motion.div>
 
       {/* Left — AnimatePresence statement cycling + Progress dots */}
