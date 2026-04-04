@@ -110,6 +110,7 @@ function MacBookModel({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
     groupRef.current.rotation.y = currentRotY.current;
     groupRef.current.rotation.x = currentRotX.current;
+    groupRef.current.position.x = 0.12;
 
     // Shift model position down by -0.1 units to roughly vertical center
     groupRef.current.position.y = -0.1;
@@ -132,7 +133,7 @@ export default function MacBookShowcase({ dragRef }: { dragRef: React.RefObject<
   return (
     <Canvas
       style={{ width: '100%', height: '100%' }}
-      camera={{ position: [-0.28, 0.1, 0.45], fov: 55 }}
+      camera={{ position: [0, 0.1, 0.45], fov: 55 }}
       gl={{ antialias: true, alpha: true }}
     >
       <ambientLight intensity={0.4} />
