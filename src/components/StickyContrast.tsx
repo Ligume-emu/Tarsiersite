@@ -97,7 +97,7 @@ const StickyContrast = () => {
                 <span className="font-mono text-[10px] text-neutral-900/30 uppercase tracking-[0.16em] mb-3 block">
                   {statements[activeIndex].label}
                 </span>
-                <p className="font-body text-[16px] text-neutral-900/40 leading-relaxed line-through decoration-tarsier/40">
+                <p className="font-body text-[18px] text-neutral-900/40 leading-relaxed line-through decoration-tarsier/40">
                   {statements[activeIndex].them}
                 </p>
               </div>
@@ -107,7 +107,7 @@ const StickyContrast = () => {
                 <span className="font-mono text-[10px] text-tarsier uppercase tracking-[0.16em] mb-3 block">
                   {statements[activeIndex].usLabel}
                 </span>
-                <p className="font-display text-[18px] lg:text-[22px] font-semibold text-neutral-900 leading-tight">
+                <p className="font-display text-[22px] lg:text-[28px] font-semibold text-neutral-900 leading-tight">
                   {statements[activeIndex].us}
                 </p>
               </div>
