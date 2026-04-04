@@ -133,7 +133,7 @@ export default function MacBookShowcase({ dragRef }: { dragRef: React.RefObject<
   return (
     <Canvas
       style={{ width: '100%', height: '100%' }}
-      camera={{ position: [0, 0.1, 0.45], fov: 55 }}
+      camera={{ position: [0, 0.3, 1.2], fov: 28 }}
       gl={{ antialias: true, alpha: true }}
     >
       <ambientLight intensity={0.4} />
