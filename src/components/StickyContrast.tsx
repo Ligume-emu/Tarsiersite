@@ -80,9 +80,9 @@ const StickyContrast = () => {
       </motion.div>
 
       {/* Left — AnimatePresence statement cycling + Progress dots */}
-      <div className="absolute right-12 top-1/2 -translate-y-1/2 z-10 max-w-sm">
+      <div className="absolute right-12 top-1/2 -translate-y-1/2 z-10 w-[320px]">
         {/* Statement cycling */}
-        <div className="relative h-[300px] sm:h-[260px] mb-6">
+        <div className="relative w-full h-[300px] sm:h-[260px] mb-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeIndex}
