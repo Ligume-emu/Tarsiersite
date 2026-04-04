@@ -110,7 +110,7 @@ function MacBookModel({ dragRef }: { dragRef: React.RefObject<DragState> }) {
     currentRotX.current += (drag.rotX - currentRotX.current) * 0.1;
     groupRef.current.rotation.y = currentRotY.current;
     groupRef.current.rotation.x = currentRotX.current;
-    groupRef.current.position.x = 0.12;
+    groupRef.current.position.x = 0.22;
 
     // Shift model position down by -0.1 units to roughly vertical center
     groupRef.current.position.y = -0.1;
